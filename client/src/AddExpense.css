@@ -1,0 +1,332 @@
+/* ========================================
+   EXPENSE OVERLAY
+======================================== */
+
+.expense-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(7, 45, 42, 0.35);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 1000;
+
+  backdrop-filter: blur(4px);
+}
+
+
+/* ========================================
+   MODAL
+======================================== */
+
+.expense-modal {
+  width: 100%;
+  max-width: 500px;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 20px 60px rgba(7, 45, 42, 0.2);
+
+  overflow: hidden;
+
+  animation: expenseModalIn 0.2s ease-out;
+}
+
+
+@keyframes expenseModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* ========================================
+   MODAL HEADER
+======================================== */
+
+.expense-modal-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 24px 28px;
+
+  border-bottom: 1px solid #dcebe6;
+}
+
+
+.expense-modal-header h2 {
+  margin: 0;
+
+  color: #073f3b;
+
+  font-size: 24px;
+  font-weight: 700;
+}
+
+
+.expense-modal-header p {
+  margin: 6px 0 0;
+
+  color: #71908c;
+
+  font-size: 14px;
+}
+
+
+/* ========================================
+   CLOSE BUTTON
+======================================== */
+
+.close-btn {
+  width: 36px;
+  height: 36px;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #f0f7f4;
+
+  color: #073f3b;
+
+  font-size: 24px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
+}
+
+
+.close-btn:hover {
+  background: #e1f1eb;
+
+  transform: rotate(90deg);
+}
+
+
+/* ========================================
+   FORM
+======================================== */
+
+.expense-form {
+  padding: 28px;
+}
+
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+
+.form-group label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #073f3b;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+
+.form-group input,
+.form-group select {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  padding: 13px 14px;
+
+  border: 1px solid #cfe3dd;
+
+  border-radius: 10px;
+
+  background: #fbfefd;
+
+  color: #073f3b;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition: 0.2s;
+}
+
+
+.form-group input::placeholder {
+  color: #9bb5b0;
+}
+
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #4cbd91;
+
+  box-shadow:
+    0 0 0 3px rgba(76, 189, 145, 0.12);
+
+  background: #ffffff;
+}
+
+
+/* ========================================
+   ERROR
+======================================== */
+
+.expense-error {
+  margin: 20px 28px 0;
+
+  padding: 12px 14px;
+
+  border-radius: 10px;
+
+  background: #fff1f1;
+
+  border: 1px solid #ffd0d0;
+
+  color: #d93636;
+
+  font-size: 14px;
+}
+
+
+/* ========================================
+   ACTION BUTTONS
+======================================== */
+
+.expense-actions {
+  display: flex;
+
+  gap: 12px;
+
+  margin-top: 28px;
+}
+
+
+.cancel-btn,
+.save-expense-btn {
+  flex: 1;
+
+  padding: 13px 18px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+
+.cancel-btn {
+  background: #ffffff;
+
+  border: 1px solid #cfe3dd;
+
+  color: #416b66;
+}
+
+
+.cancel-btn:hover {
+  background: #f2f8f6;
+}
+
+
+.save-expense-btn {
+  background: #4cbd91;
+
+  border: 1px solid #4cbd91;
+
+  color: #ffffff;
+
+  box-shadow:
+    0 6px 15px rgba(76, 189, 145, 0.2);
+}
+
+
+.save-expense-btn:hover {
+  background: #3eaa80;
+
+  border-color: #3eaa80;
+
+  transform: translateY(-1px);
+}
+
+
+.save-expense-btn:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* ========================================
+   MOBILE
+======================================== */
+
+@media (max-width: 600px) {
+
+  .expense-overlay {
+    padding: 15px;
+  }
+
+
+  .expense-modal {
+    max-width: 100%;
+
+    border-radius: 14px;
+  }
+
+
+  .expense-modal-header {
+    padding: 20px;
+  }
+
+
+  .expense-form {
+    padding: 20px;
+  }
+
+
+  .expense-error {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+
+  .expense-actions {
+    flex-direction: column-reverse;
+  }
+
+
+  .cancel-btn,
+  .save-expense-btn {
+    width: 100%;
+  }
+}
