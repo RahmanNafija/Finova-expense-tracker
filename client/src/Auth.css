@@ -174,12 +174,12 @@
 
   padding: 12px 14px;
 
-  background: #eaf8f1;
+  background: #e8f8f0;
 
-  border: 1px solid #bfe6d2;
+  border: 1px solid #bfe8d3;
   border-radius: 10px;
 
-  color: #269365;
+  color: #267a59;
 
   font-size: 13px;
 }
@@ -230,15 +230,24 @@
 ======================================== */
 
 .auth-divider {
+  width: 100%;
+
   display: flex;
   align-items: center;
+  justify-content: center;
 
-  gap: 16px;
+  gap: 14px;
 
   margin: 34px 0;
 }
 
-.auth-divider span {
+
+/* LEFT LINE */
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+
   flex: 1;
 
   height: 1px;
@@ -246,12 +255,23 @@
   background: #d8e9e3;
 }
 
-.auth-divider p {
-  margin: 0;
+
+/* "OR" TEXT */
+
+.auth-divider span {
+  flex: 0 0 auto;
+
+  height: auto;
+
+  background: transparent;
 
   color: #8aa7a2;
 
   font-size: 13px;
+
+  line-height: 1;
+
+  padding: 0;
 }
 
 
@@ -261,6 +281,7 @@
 
 .auth-switch {
   display: flex;
+
   justify-content: center;
   align-items: center;
 
@@ -269,6 +290,8 @@
   color: #608486;
 
   font-size: 14px;
+
+  text-align: center;
 }
 
 .auth-switch button {
@@ -287,6 +310,55 @@
 
 .auth-switch button:hover {
   color: #218b61;
+
+  text-decoration: underline;
+}
+
+
+/* ========================================
+   SIGNUP PROMPT
+   Used by Login / Forgot Password
+======================================== */
+
+.signup-prompt {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 5px;
+
+  color: #608486;
+
+  font-size: 14px;
+
+  text-align: center;
+}
+
+
+/* ========================================
+   SIGNUP LINK
+======================================== */
+
+.signup-link {
+  padding: 0;
+
+  border: none;
+  background: transparent;
+
+  color: #2eaa78;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.signup-link:hover {
+  color: #218b61;
+
   text-decoration: underline;
 }
 

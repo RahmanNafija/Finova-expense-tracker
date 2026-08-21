@@ -1,39 +1,19 @@
 import { useState } from "react";
-import "./Login.css";
 import "./Auth.css";
 
 const API_URL = "http://localhost:5000/api/auth";
 
-function Login({
-  onLogin,
-  onShowSignup,
-  onShowForgotPassword,
+function ForgotPassword({
+  onBackToLogin,
+  onResetToken,
 }) {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // ========================================
-  // HANDLE INPUT
-  // ========================================
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
-
-    setError("");
-  };
-
-  // ========================================
-  // LOGIN
+  // HANDLE PASSWORD RESET REQUEST
   // ========================================
 
   const handleSubmit = async (event) => {
@@ -43,41 +23,45 @@ function Login({
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: "POST",
+      const response = await fetch(
+        `${API_URL}/forgot-password`,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify(formData),
-      });
+          body: JSON.stringify({
+            email,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Login failed"
+          data.message ||
+          "Failed to process password reset"
         );
       }
 
-      // Save token
-      localStorage.setItem(
-        "token",
-        data.token
-      );
+      // Check whether backend returned a token
+      if (!data.resetToken) {
+        throw new Error(
+          "Password reset token was not generated."
+        );
+      }
 
-      // Save user
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
-
-      // Send user data to App
-      onLogin(data.user);
+      // Send token to App.jsx
+      onResetToken(data.resetToken);
 
     } catch (error) {
-      console.error("Login error:", error);
+      console.error(
+        "Forgot password error:",
+        error
+      );
 
       setError(
         error.message ||
@@ -135,21 +119,17 @@ function Login({
 
           <div className="auth-header">
 
-            <div className="mobile-logo">
-              S
-            </div>
-
             <p className="auth-welcome">
-              WELCOME BACK ✨
+              PASSWORD RECOVERY 🔐
             </p>
 
             <h2>
-              Welcome back
+              Forgot your password?
             </h2>
 
             <p>
-              Sign in to continue managing
-              your expenses.
+              Enter your email address and
+              we'll help you reset your password.
             </p>
 
           </div>
@@ -171,97 +151,56 @@ function Login({
             onSubmit={handleSubmit}
           >
 
-            {/* EMAIL */}
-
             <div className="form-field">
 
-              <label htmlFor="email">
+              <label htmlFor="forgot-email">
                 Email address
               </label>
 
               <input
-                id="email"
+                id="forgot-email"
                 type="email"
-                name="email"
                 placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
+                value={email}
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  setError("");
+                }}
                 required
               />
 
             </div>
 
 
-            {/* PASSWORD */}
-
-            <div className="form-field">
-
-              <div className="password-label">
-
-                <label htmlFor="password">
-                  Password
-                </label>
-
-                {/* FORGOT PASSWORD */}
-
-                <button
-                  type="button"
-                  className="forgot-password"
-                  onClick={onShowForgotPassword}
-                >
-                  Forgot password?
-                </button>
-
-              </div>
-
-              <input
-                id="password"
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-
-            </div>
-
-
-            {/* LOGIN BUTTON */}
+            {/* RESET BUTTON */}
 
             <button
               type="submit"
               className="login-btn"
               disabled={loading}
             >
-
               {loading
-                ? "Signing in..."
-                : "Sign In"}
-
+                ? "Processing..."
+                : "Reset Password"}
             </button>
 
           </form>
 
 
-          {/* SIGNUP */}
-
-          <div className="auth-divider">
-            <span>or</span>
-          </div>
+          {/* BACK TO LOGIN */}
 
           <div className="signup-prompt">
 
             <span>
-              Don't have an account?
+              Remember your password?
             </span>
 
             <button
               type="button"
-              onClick={onShowSignup}
+              onClick={onBackToLogin}
               className="signup-link"
             >
-              Create account
+              Back to login
             </button>
 
           </div>
@@ -274,4 +213,4 @@ function Login({
   );
 }
 
-export default Login;
+export default ForgotPassword;

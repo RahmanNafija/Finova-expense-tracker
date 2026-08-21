@@ -1,281 +1,120 @@
-* {
-  box-sizing: border-box;
+/* ========================================
+   CATEGORY FILTER
+======================================== */
+
+.category-select-wrapper {
+  position: relative;
+  width: 180px;
 }
 
-.expenses-page {
-  min-height: 100vh;
-  background: #f3faf7;
-  padding: 40px 5%;
-  color: #073b3a;
-}
-
-/* HEADER */
-
-.expenses-header {
-  max-width: 1200px;
-  margin: 0 auto 30px;
-}
-
-.back-btn {
-  border: none;
-  background: transparent;
-  color: #37aa7d;
-  font-weight: 700;
-  cursor: pointer;
-  margin-bottom: 25px;
-  font-size: 13px;
-}
-
-.expenses-header h1 {
-  margin: 0;
-  font-size: 32px;
-}
-
-.expenses-header p {
-  margin-top: 8px;
-  color: #7d9892;
-  font-size: 14px;
-}
-
-/* SUMMARY */
-
-.expenses-summary {
-  max-width: 1200px;
-  margin: 0 auto 20px;
-
-  display: flex;
-  gap: 20px;
-}
-
-.expenses-summary > div {
-  background: white;
-  border: 1px solid #dcece6;
-  border-radius: 15px;
-  padding: 20px 25px;
-  min-width: 180px;
-}
-
-.expenses-summary span {
-  display: block;
-  color: #8aa29d;
-  font-size: 12px;
-}
-
-.expenses-summary strong {
-  display: block;
-  margin-top: 7px;
-  font-size: 22px;
-}
-
-.expenses-summary small {
-  color: #9cafaa;
-  font-size: 11px;
-}
-
-/* FILTER */
-
-.filter-bar {
-  max-width: 1200px;
-  margin: 0 auto 20px;
-
-  display: flex;
-  gap: 12px;
-}
-
-.search-box {
-  flex: 1;
-
-  background: white;
-  border: 1px solid #dcece6;
-  border-radius: 10px;
-
-  display: flex;
-  align-items: center;
-
-  padding: 0 14px;
-}
-
-.search-box span {
-  color: #7d9992;
-  font-size: 20px;
-}
-
-.search-box input {
+.category-select {
   width: 100%;
-  border: none;
-  outline: none;
-  padding: 13px;
-  font-size: 13px;
-}
+  height: 46px;
 
-.filter-bar select {
+  padding: 0 38px 0 16px;
+
   border: 1px solid #dcece6;
-  background: white;
   border-radius: 10px;
-  padding: 0 18px;
+
+  background-color: white;
   color: #315e58;
+
+  font-size: 13px;
+
   outline: none;
-}
-
-/* CARD */
-
-.expenses-card {
-  max-width: 1200px;
-  margin: auto;
-
-  background: white;
-  border: 1px solid #dcece6;
-  border-radius: 16px;
-
-  overflow: hidden;
-}
-
-/* TABLE */
-
-.expense-table-header,
-.expense-row {
-  display: grid;
-
-  grid-template-columns:
-    2fr
-    1fr
-    1fr
-    1fr
-    100px;
-
-  align-items: center;
-}
-
-.expense-table-header {
-  padding: 16px 22px;
-  background: #f8fcfa;
-
-  color: #88a09a;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.expense-row {
-  padding: 17px 22px;
-  border-top: 1px solid #e8f1ee;
-}
-
-.expense-name {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.expense-icon {
-  width: 40px;
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  background: #eef8f4;
-  border-radius: 10px;
-}
-
-.expense-name strong {
-  font-size: 13px;
-}
-
-.expense-category,
-.expense-date {
-  font-size: 12px;
-  color: #75908a;
-}
-
-.expense-amount {
-  color: #e45e5e;
-  font-size: 13px;
-}
-
-/* ACTIONS */
-
-.expense-actions {
-  display: flex;
-  gap: 7px;
-}
-
-.edit-btn,
-.delete-btn {
-  width: 32px;
-  height: 32px;
-
-  border: none;
-  border-radius: 8px;
-
   cursor: pointer;
+
+  box-sizing: border-box;
+
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%23315e58' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+
+  background-repeat: no-repeat;
+
+  /* Arrow slightly left */
+  background-position: calc(100% - 14px) center;
+
+  background-size: 12px 8px;
 }
 
-.edit-btn {
-  background: #eef5ff;
+.category-select:focus {
+  border-color: #4dbb8d;
+
+  box-shadow:
+    0 0 0 3px rgba(77, 187, 141, 0.10);
+}
+/* ========================================
+   EXPENSE FILTER CATEGORY DROPDOWN
+======================================== */
+
+.category-select-wrapper {
+  position: relative;
+  width: 180px;
+  height: 46px;
 }
 
-.delete-btn {
-  background: #fff0f0;
-}
+/* SELECT */
 
-/* EMPTY */
+.category-select {
+  width: 100%;
+  height: 46px;
 
-.no-expenses {
-  text-align: center;
-  padding: 80px 20px;
-}
+  box-sizing: border-box;
 
-.no-expenses > div {
-  font-size: 40px;
-}
+  padding: 0 42px 0 16px;
 
-.no-expenses h2 {
-  margin: 15px 0 5px;
-}
+  border: 1px solid #dcece6;
+  border-radius: 10px;
 
-.no-expenses p {
-  color: #8aa29c;
+  background: #ffffff;
+
+  color: #315e58;
+
   font-size: 13px;
+
+  outline: none;
+  cursor: pointer;
+
+  /* IMPORTANT: remove browser arrow */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+
+  background-image: none !important;
 }
 
-/* MOBILE */
+/* CUSTOM ARROW */
 
-@media (max-width: 800px) {
+.category-select-wrapper::after {
+  content: "⌄";
 
-  .expense-table-header {
-    display: none;
-  }
+  position: absolute;
 
-  .expense-row {
-    grid-template-columns: 1fr auto;
-    gap: 12px;
-  }
+  /* 👈 move arrow slightly LEFT */
+  right: 20px;
 
-  .expense-category,
-  .expense-date {
-    display: none;
-  }
+  top: 50%;
 
-  .expense-amount {
-    text-align: right;
-  }
+  transform: translateY(-55%);
 
-  .expense-actions {
-    grid-column: 2;
-    justify-content: flex-end;
-  }
+  color: #315e58;
 
-  .filter-bar {
-    flex-direction: column;
-  }
+  font-size: 17px;
+  font-weight: 700;
 
-  .filter-bar select {
-    height: 45px;
-  }
+  line-height: 1;
 
-  .expenses-summary {
-    flex-direction: column;
-  }
+  pointer-events: none;
+}
 
+/* FOCUS */
+
+.category-select:focus {
+  border-color: #4dbb8d;
+
+  box-shadow:
+    0 0 0 3px rgba(77, 187, 141, 0.10);
 }

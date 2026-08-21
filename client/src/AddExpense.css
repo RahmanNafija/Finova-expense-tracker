@@ -21,7 +21,7 @@
 
 
 /* ========================================
-   MODAL
+   EXPENSE MODAL
 ======================================== */
 
 .expense-modal {
@@ -33,7 +33,7 @@
   border-radius: 18px;
 
   box-shadow:
-    0 20px 60px rgba(7, 45, 42, 0.2);
+    0 20px 60px rgba(7, 45, 42, 0.20);
 
   overflow: hidden;
 
@@ -60,7 +60,6 @@
 
 .expense-modal-header {
   display: flex;
-
   align-items: center;
   justify-content: space-between;
 
@@ -68,7 +67,6 @@
 
   border-bottom: 1px solid #dcebe6;
 }
-
 
 .expense-modal-header h2 {
   margin: 0;
@@ -78,7 +76,6 @@
   font-size: 24px;
   font-weight: 700;
 }
-
 
 .expense-modal-header p {
   margin: 6px 0 0;
@@ -97,6 +94,8 @@
   width: 36px;
   height: 36px;
 
+  flex-shrink: 0;
+
   border: none;
   border-radius: 50%;
 
@@ -105,6 +104,7 @@
   color: #073f3b;
 
   font-size: 24px;
+  line-height: 1;
 
   cursor: pointer;
 
@@ -112,9 +112,10 @@
   align-items: center;
   justify-content: center;
 
-  transition: 0.2s;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
-
 
 .close-btn:hover {
   background: #e1f1eb;
@@ -132,12 +133,20 @@
 }
 
 
-.form-group {
+/* ========================================
+   FORM GROUP
+======================================== */
+
+.expense-form-group {
+  width: 100%;
+
   margin-bottom: 20px;
 }
 
 
-.form-group label {
+/* LABEL */
+
+.expense-form-group label {
   display: block;
 
   margin-bottom: 8px;
@@ -150,13 +159,16 @@
 }
 
 
-.form-group input,
-.form-group select {
+/* INPUT + SELECT */
+
+.expense-form-group input,
+.expense-form-group select {
   width: 100%;
+  height: 48px;
 
   box-sizing: border-box;
 
-  padding: 13px 14px;
+  padding: 0 14px;
 
   border: 1px solid #cfe3dd;
 
@@ -170,17 +182,24 @@
 
   outline: none;
 
-  transition: 0.2s;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
 }
 
 
-.form-group input::placeholder {
+/* PLACEHOLDER */
+
+.expense-form-group input::placeholder {
   color: #9bb5b0;
 }
 
 
-.form-group input:focus,
-.form-group select:focus {
+/* FOCUS */
+
+.expense-form-group input:focus,
+.expense-form-group select:focus {
   border-color: #4cbd91;
 
   box-shadow:
@@ -190,12 +209,42 @@
 }
 
 
+/* SELECT */
+
+.expense-form-group select {
+  width: 100%;
+  height: 48px;
+
+  box-sizing: border-box;
+
+  padding: 0 40px 0 14px;
+
+  border: 1px solid #cfe3dd;
+  border-radius: 10px;
+
+  background: #fbfefd;
+
+  color: #073f3b;
+
+  font-size: 14px;
+
+  outline: none;
+
+  cursor: pointer;
+
+  /* Use only browser's normal select arrow */
+  appearance: auto;
+
+  -webkit-appearance: auto;
+  -moz-appearance: auto;
+}
+
 /* ========================================
    ERROR
 ======================================== */
 
 .expense-error {
-  margin: 20px 28px 0;
+  margin: 0 28px 0;
 
   padding: 12px 14px;
 
@@ -224,11 +273,15 @@
 }
 
 
+/* BOTH BUTTONS */
+
 .cancel-btn,
 .save-expense-btn {
   flex: 1;
 
-  padding: 13px 18px;
+  height: 48px;
+
+  padding: 0 18px;
 
   border-radius: 10px;
 
@@ -238,9 +291,15 @@
 
   cursor: pointer;
 
-  transition: 0.2s;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
+
+/* CANCEL */
 
 .cancel-btn {
   background: #ffffff;
@@ -250,11 +309,14 @@
   color: #416b66;
 }
 
-
 .cancel-btn:hover {
   background: #f2f8f6;
+
+  border-color: #bcd8d0;
 }
 
+
+/* SAVE */
 
 .save-expense-btn {
   background: #4cbd91;
@@ -264,9 +326,8 @@
   color: #ffffff;
 
   box-shadow:
-    0 6px 15px rgba(76, 189, 145, 0.2);
+    0 6px 15px rgba(76, 189, 145, 0.20);
 }
-
 
 .save-expense-btn:hover {
   background: #3eaa80;
@@ -274,8 +335,13 @@
   border-color: #3eaa80;
 
   transform: translateY(-1px);
+
+  box-shadow:
+    0 8px 18px rgba(76, 189, 145, 0.25);
 }
 
+
+/* DISABLED */
 
 .save-expense-btn:disabled {
   opacity: 0.6;
@@ -283,6 +349,8 @@
   cursor: not-allowed;
 
   transform: none;
+
+  box-shadow: none;
 }
 
 
@@ -301,11 +369,25 @@
     max-width: 100%;
 
     border-radius: 14px;
+
+    max-height: 90vh;
+
+    overflow-y: auto;
   }
 
 
   .expense-modal-header {
     padding: 20px;
+  }
+
+
+  .expense-modal-header h2 {
+    font-size: 21px;
+  }
+
+
+  .expense-modal-header p {
+    font-size: 13px;
   }
 
 
@@ -322,6 +404,8 @@
 
   .expense-actions {
     flex-direction: column-reverse;
+
+    gap: 10px;
   }
 
 

@@ -20,11 +20,29 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             minlength: 6
+        },
+
+        // ========================================
+        // PASSWORD RESET
+        // ========================================
+
+        resetPasswordToken: {
+            type: String,
+            default: null
+        },
+
+        resetPasswordExpires: {
+            type: Date,
+            default: null
         }
     },
+
     {
         timestamps: true
     }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+    "User",
+    userSchema
+);

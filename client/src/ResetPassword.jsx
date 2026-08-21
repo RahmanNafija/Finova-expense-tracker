@@ -1,83 +1,82 @@
 import { useState } from "react";
-import "./Login.css";
 import "./Auth.css";
 
 const API_URL = "http://localhost:5000/api/auth";
 
-function Login({
-  onLogin,
-  onShowSignup,
-  onShowForgotPassword,
-}) {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // ========================================
-  // HANDLE INPUT
-  // ========================================
-
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
-
-    setError("");
-  };
-
-  // ========================================
-  // LOGIN
+  // RESET PASSWORD
   // ========================================
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     setError("");
+    setSuccess("");
+
+    // Check password length
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
+    // Check passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: "POST",
+      const response = await fetch(
+        `${API_URL}/reset-password`,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify(formData),
-      });
+          body: JSON.stringify({
+            token,
+            password,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Login failed"
+          data.message || "Failed to reset password"
         );
       }
 
-      // Save token
-      localStorage.setItem(
-        "token",
-        data.token
+      setSuccess(
+        "Password reset successfully!"
       );
 
-      // Save user
-      localStorage.setItem(
-        "user",
-        JSON.stringify(data.user)
-      );
+      setPassword("");
+      setConfirmPassword("");
 
-      // Send user data to App
-      onLogin(data.user);
+      // Go back to login after a short delay
+      setTimeout(() => {
+        onResetSuccess();
+      }, 1500);
 
     } catch (error) {
-      console.error("Login error:", error);
+      console.error(
+        "Reset password error:",
+        error
+      );
 
       setError(
         error.message ||
@@ -135,21 +134,17 @@ function Login({
 
           <div className="auth-header">
 
-            <div className="mobile-logo">
-              S
-            </div>
-
             <p className="auth-welcome">
-              WELCOME BACK ✨
+              PASSWORD RESET 🔐
             </p>
 
             <h2>
-              Welcome back
+              Create new password
             </h2>
 
             <p>
-              Sign in to continue managing
-              your expenses.
+              Enter a new password for your
+              Finova account.
             </p>
 
           </div>
@@ -164,6 +159,15 @@ function Login({
           )}
 
 
+          {/* SUCCESS */}
+
+          {success && (
+            <div className="auth-success">
+              ✅ {success}
+            </div>
+          )}
+
+
           {/* FORM */}
 
           <form
@@ -171,97 +175,81 @@ function Login({
             onSubmit={handleSubmit}
           >
 
-            {/* EMAIL */}
+            {/* NEW PASSWORD */}
 
             <div className="form-field">
 
-              <label htmlFor="email">
-                Email address
+              <label htmlFor="password">
+                New password
               </label>
-
-              <input
-                id="email"
-                type="email"
-                name="email"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-
-            </div>
-
-
-            {/* PASSWORD */}
-
-            <div className="form-field">
-
-              <div className="password-label">
-
-                <label htmlFor="password">
-                  Password
-                </label>
-
-                {/* FORGOT PASSWORD */}
-
-                <button
-                  type="button"
-                  className="forgot-password"
-                  onClick={onShowForgotPassword}
-                >
-                  Forgot password?
-                </button>
-
-              </div>
 
               <input
                 id="password"
                 type="password"
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
+                placeholder="Enter new password"
+                value={password}
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
                 required
               />
 
             </div>
 
 
-            {/* LOGIN BUTTON */}
+            {/* CONFIRM PASSWORD */}
+
+            <div className="form-field">
+
+              <label htmlFor="confirmPassword">
+                Confirm password
+              </label>
+
+              <input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(event) =>
+                  setConfirmPassword(
+                    event.target.value
+                  )
+                }
+                required
+              />
+
+            </div>
+
+
+            {/* RESET BUTTON */}
 
             <button
               type="submit"
               className="login-btn"
               disabled={loading}
             >
-
               {loading
-                ? "Signing in..."
-                : "Sign In"}
-
+                ? "Resetting..."
+                : "Reset Password"}
             </button>
 
           </form>
 
 
-          {/* SIGNUP */}
-
-          <div className="auth-divider">
-            <span>or</span>
-          </div>
+          {/* BACK TO LOGIN */}
 
           <div className="signup-prompt">
 
             <span>
-              Don't have an account?
+              Remember your password?
             </span>
 
             <button
               type="button"
-              onClick={onShowSignup}
+              onClick={onBackToLogin}
               className="signup-link"
             >
-              Create account
+              Back to login
             </button>
 
           </div>
@@ -274,4 +262,4 @@ function Login({
   );
 }
 
-export default Login;
+export default ResetPassword;

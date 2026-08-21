@@ -7,11 +7,8 @@ function Expenses({
   onEdit,
   onDelete,
 }) {
-  const [search, setSearch] =
-    useState("");
-
-  const [category, setCategory] =
-    useState("All");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
 
   const categories = [
     "All",
@@ -24,73 +21,53 @@ function Expenses({
   ];
 
   // ========================================
-  // FILTER
+  // FILTER EXPENSES
   // ========================================
 
-  const filteredExpenses =
-    useMemo(() => {
-      return expenses.filter(
-        (expense) => {
-          const matchesSearch =
-            expense.title
-              .toLowerCase()
-              .includes(
-                search.toLowerCase()
-              );
+  const filteredExpenses = useMemo(() => {
+    return expenses.filter((expense) => {
+      const title = expense.title || "";
 
-          const matchesCategory =
-            category === "All" ||
-            expense.category ===
-              category;
+      const matchesSearch = title
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-          return (
-            matchesSearch &&
-            matchesCategory
-          );
-        }
-      );
-    }, [
-      expenses,
-      search,
-      category,
-    ]);
+      const matchesCategory =
+        category === "All" ||
+        expense.category === category;
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [expenses, search, category]);
 
   // ========================================
   // TOTAL
   // ========================================
 
-  const total =
-    filteredExpenses.reduce(
-      (sum, expense) =>
-        sum +
-        Number(
-          expense.amount
-        ),
-      0
-    );
+  const total = filteredExpenses.reduce(
+    (sum, expense) =>
+      sum + Number(expense.amount || 0),
+    0
+  );
 
   // ========================================
   // FORMAT MONEY
   // ========================================
 
-  const formatMoney = (
-    amount
-  ) => {
-    return `৳${amount.toFixed(
-      2
-    )}`;
+  const formatMoney = (amount) => {
+    return `৳${Number(amount).toFixed(2)}`;
   };
 
   // ========================================
   // FORMAT DATE
   // ========================================
 
-  const formatDate = (
-    date
-  ) => {
-    return new Date(
-      date
-    ).toLocaleDateString(
+  const formatDate = (date) => {
+    if (!date) {
+      return "—";
+    }
+
+    return new Date(date).toLocaleDateString(
       "en-US",
       {
         day: "numeric",
@@ -104,9 +81,7 @@ function Expenses({
   // CATEGORY ICON
   // ========================================
 
-  const getCategoryIcon = (
-    category
-  ) => {
+  const getCategoryIcon = (category) => {
     switch (category) {
       case "Food":
         return "🍴";
@@ -123,6 +98,12 @@ function Expenses({
       case "Entertainment":
         return "🎮";
 
+      case "Health":
+        return "❤️";
+
+      case "Education":
+        return "📚";
+
       default:
         return "•••";
     }
@@ -135,11 +116,14 @@ function Expenses({
   return (
     <div className="expenses-page">
 
-      {/* HEADER */}
+      {/* ========================================
+          HEADER
+      ======================================== */}
 
       <header className="expenses-header">
 
         <button
+          type="button"
           className="back-btn"
           onClick={onBack}
         >
@@ -151,27 +135,26 @@ function Expenses({
         </h1>
 
         <p>
-          Manage and review
-          your transactions
+          Manage and review your transactions
         </p>
 
       </header>
 
 
-      {/* SUMMARY */}
+      {/* ========================================
+          SUMMARY
+      ======================================== */}
 
       <section className="expenses-summary">
 
-        <div>
+        <div className="summary-card">
 
           <span>
             Showing
           </span>
 
           <strong>
-            {
-              filteredExpenses.length
-            }
+            {filteredExpenses.length}
           </strong>
 
           <small>
@@ -181,16 +164,14 @@ function Expenses({
         </div>
 
 
-        <div>
+        <div className="summary-card">
 
           <span>
             Total
           </span>
 
           <strong>
-            {formatMoney(
-              total
-            )}
+            {formatMoney(total)}
           </strong>
 
           <small>
@@ -202,13 +183,17 @@ function Expenses({
       </section>
 
 
-      {/* FILTER */}
+      {/* ========================================
+          FILTER BAR
+      ======================================== */}
 
       <section className="filter-bar">
 
+        {/* SEARCH */}
+
         <div className="search-box">
 
-          <span>
+          <span className="search-icon">
             🔍
           </span>
 
@@ -216,51 +201,57 @@ function Expenses({
             type="text"
             placeholder="Search expenses..."
             value={search}
-            onChange={(e) =>
-              setSearch(
-                e.target.value
-              )
+            onChange={(event) =>
+              setSearch(event.target.value)
             }
           />
 
         </div>
 
 
-        <select
-          value={category}
-          onChange={(e) =>
-            setCategory(
-              e.target.value
-            )
-          }
-        >
+        {/* CATEGORY */}
 
-          {categories.map(
-            (item) => (
+        <div className="category-select-wrapper">
+
+          <select
+            value={category}
+            onChange={(event) =>
+              setCategory(event.target.value)
+            }
+            className="category-select"
+          >
+
+            {categories.map((item) => (
               <option
                 key={item}
                 value={item}
               >
                 {item}
               </option>
-            )
-          )}
+            ))}
 
-        </select>
+          </select>
+
+        </div>
 
       </section>
 
 
-      {/* EXPENSES */}
+      {/* ========================================
+          EXPENSE TABLE
+      ======================================== */}
 
       <section className="expenses-card">
 
-        {filteredExpenses.length ===
-        0 ? (
+        {filteredExpenses.length === 0 ? (
+
+          /* ========================================
+             EMPTY STATE
+          ======================================== */
 
           <div className="no-expenses">
 
-            <div>
+            <div className="empty-icon">
               🌱
             </div>
 
@@ -269,14 +260,17 @@ function Expenses({
             </h2>
 
             <p>
-              Try changing your
-              search or category
-              filter.
+              Try changing your search or
+              category filter.
             </p>
 
           </div>
 
         ) : (
+
+          /* ========================================
+             EXPENSE TABLE
+          ======================================== */
 
           <div className="expense-table">
 
@@ -307,17 +301,17 @@ function Expenses({
             </div>
 
 
-            {/* ROWS */}
+            {/* EXPENSE ROWS */}
 
             {filteredExpenses.map(
               (expense) => (
 
                 <div
                   className="expense-row"
-                  key={
-                    expense._id
-                  }
+                  key={expense._id}
                 >
+
+                  {/* EXPENSE */}
 
                   <div className="expense-name">
 
@@ -328,20 +322,20 @@ function Expenses({
                     </div>
 
                     <strong>
-                      {
-                        expense.title
-                      }
+                      {expense.title}
                     </strong>
 
                   </div>
 
 
+                  {/* CATEGORY */}
+
                   <span className="expense-category">
-                    {
-                      expense.category
-                    }
+                    {expense.category}
                   </span>
 
+
+                  {/* DATE */}
 
                   <span className="expense-date">
                     {formatDate(
@@ -350,31 +344,40 @@ function Expenses({
                   </span>
 
 
+                  {/* AMOUNT */}
+
                   <strong className="expense-amount">
                     -
                     {formatMoney(
                       Number(
-                        expense.amount
+                        expense.amount || 0
                       )
                     )}
                   </strong>
 
 
+                  {/* ACTIONS */}
+
                   <div className="expense-actions">
 
+                    {/* EDIT */}
+
                     <button
+                      type="button"
                       className="edit-btn"
                       onClick={() =>
-                        onEdit(
-                          expense
-                        )
+                        onEdit(expense)
                       }
                       title="Edit expense"
                     >
                       ✏️
                     </button>
 
+
+                    {/* DELETE */}
+
                     <button
+                      type="button"
                       className="delete-btn"
                       onClick={() =>
                         onDelete(
