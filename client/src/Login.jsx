@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./Login.css";
 import "./Auth.css";
 
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = "https://finova-expense-tracker.onrender.com";
 
 function Login({
   onLogin,

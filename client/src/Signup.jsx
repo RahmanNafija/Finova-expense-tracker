@@ -47,7 +47,7 @@ function Signup({ onSwitchToLogin }) {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/signup",
+        "https://finova-expense-tracker.onrender.com",
         {
           method: "POST",
           headers: {

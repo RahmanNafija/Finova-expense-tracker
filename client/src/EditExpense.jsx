@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./AddExpense.css";
 
-const API_URL = "http://localhost:5000/api/expenses";
+const API_URL = "https://finova-expense-tracker.onrender.com";
 
 function EditExpense({ expense, onExpenseUpdated, onClose }) {
   const [formData, setFormData] = useState({

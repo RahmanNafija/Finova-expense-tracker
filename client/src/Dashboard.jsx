@@ -5,7 +5,7 @@ import AddExpense from "./AddExpense";
 import EditExpense from "./EditExpense";
 import Expenses from "./Expenses";
 
-const API_URL = "http://localhost:5000/api/expenses";
+const API_URL = "https://finova-expense-tracker.onrender.com";
 
 function Dashboard({ user, onLogout }) {
   const [expenses, setExpenses] = useState([]);

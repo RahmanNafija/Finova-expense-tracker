@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Auth.css";
 
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = "https://finova-expense-tracker.onrender.com";
 
 function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
   const [password, setPassword] = useState("");
