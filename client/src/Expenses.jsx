@@ -21,11 +21,21 @@ function Expenses({
   ];
 
   // ========================================
+  // MAKE SURE EXPENSES IS AN ARRAY
+  // ========================================
+
+  const expenseList = Array.isArray(expenses)
+    ? expenses
+    : Array.isArray(expenses?.expenses)
+      ? expenses.expenses
+      : [];
+
+  // ========================================
   // FILTER EXPENSES
   // ========================================
 
   const filteredExpenses = useMemo(() => {
-    return expenses.filter((expense) => {
+    return expenseList.filter((expense) => {
       const title = expense.title || "";
 
       const matchesSearch = title
@@ -38,7 +48,7 @@ function Expenses({
 
       return matchesSearch && matchesCategory;
     });
-  }, [expenses, search, category]);
+  }, [expenseList, search, category]);
 
   // ========================================
   // TOTAL
@@ -67,14 +77,17 @@ function Expenses({
       return "—";
     }
 
-    return new Date(date).toLocaleDateString(
-      "en-US",
-      {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }
-    );
+    const formattedDate = new Date(date);
+
+    if (isNaN(formattedDate.getTime())) {
+      return "—";
+    }
+
+    return formattedDate.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
   };
 
   // ========================================
@@ -245,10 +258,6 @@ function Expenses({
 
         {filteredExpenses.length === 0 ? (
 
-          /* ========================================
-             EMPTY STATE
-          ======================================== */
-
           <div className="no-expenses">
 
             <div className="empty-icon">
@@ -267,10 +276,6 @@ function Expenses({
           </div>
 
         ) : (
-
-          /* ========================================
-             EXPENSE TABLE
-          ======================================== */
 
           <div className="expense-table">
 
@@ -303,98 +308,86 @@ function Expenses({
 
             {/* EXPENSE ROWS */}
 
-            {filteredExpenses.map(
-              (expense) => (
+            {filteredExpenses.map((expense) => (
 
-                <div
-                  className="expense-row"
-                  key={expense._id}
-                >
+              <div
+                className="expense-row"
+                key={expense._id}
+              >
 
-                  {/* EXPENSE */}
+                {/* EXPENSE */}
 
-                  <div className="expense-name">
+                <div className="expense-name">
 
-                    <div className="expense-icon">
-                      {getCategoryIcon(
-                        expense.category
-                      )}
-                    </div>
-
-                    <strong>
-                      {expense.title}
-                    </strong>
-
+                  <div className="expense-icon">
+                    {getCategoryIcon(
+                      expense.category
+                    )}
                   </div>
 
-
-                  {/* CATEGORY */}
-
-                  <span className="expense-category">
-                    {expense.category}
-                  </span>
-
-
-                  {/* DATE */}
-
-                  <span className="expense-date">
-                    {formatDate(
-                      expense.date
-                    )}
-                  </span>
-
-
-                  {/* AMOUNT */}
-
-                  <strong className="expense-amount">
-                    -
-                    {formatMoney(
-                      Number(
-                        expense.amount || 0
-                      )
-                    )}
+                  <strong>
+                    {expense.title}
                   </strong>
-
-
-                  {/* ACTIONS */}
-
-                  <div className="expense-actions">
-
-                    {/* EDIT */}
-
-                    <button
-                      type="button"
-                      className="edit-btn"
-                      onClick={() =>
-                        onEdit(expense)
-                      }
-                      title="Edit expense"
-                    >
-                      ✏️
-                    </button>
-
-
-                    {/* DELETE */}
-
-                    <button
-                      type="button"
-                      className="delete-btn"
-                      onClick={() =>
-                        onDelete(
-                          expense._id
-                        )
-                      }
-                      title="Delete expense"
-                    >
-                      🗑️
-                    </button>
-
-                  </div>
 
                 </div>
 
-              )
-            )}
+
+                {/* CATEGORY */}
+
+                <span className="expense-category">
+                  {expense.category}
+                </span>
+
+
+                {/* DATE */}
+
+                <span className="expense-date">
+                  {formatDate(expense.date)}
+                </span>
+
+
+                {/* AMOUNT */}
+
+                <strong className="expense-amount">
+                  -
+                  {formatMoney(
+                    Number(expense.amount || 0)
+                  )}
+                </strong>
+
+
+                {/* ACTIONS */}
+
+                <div className="expense-actions">
+
+                  <button
+                    type="button"
+                    className="edit-btn"
+                    onClick={() =>
+                      onEdit(expense)
+                    }
+                    title="Edit expense"
+                  >
+                    ✏️
+                  </button>
+
+
+                  <button
+                    type="button"
+                    className="delete-btn"
+                    onClick={() =>
+                      onDelete(expense._id)
+                    }
+                    title="Delete expense"
+                  >
+                    🗑️
+                  </button>
+
+                </div>
+
+              </div>
+
+            ))}
 
           </div>
 
