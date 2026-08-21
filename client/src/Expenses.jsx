@@ -10,6 +10,10 @@ function Expenses({
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
+  // ========================================
+  // CATEGORIES
+  // ========================================
+
   const categories = [
     "All",
     "Food",
@@ -17,6 +21,8 @@ function Expenses({
     "Shopping",
     "Bills",
     "Entertainment",
+    "Health",
+    "Education",
     "Other",
   ];
 
@@ -24,29 +30,45 @@ function Expenses({
   // MAKE SURE EXPENSES IS AN ARRAY
   // ========================================
 
-  const expenseList = Array.isArray(expenses)
-    ? expenses
-    : Array.isArray(expenses?.expenses)
-      ? expenses.expenses
-      : [];
+  const expenseList = useMemo(() => {
+    if (Array.isArray(expenses)) {
+      return expenses;
+    }
+
+    if (Array.isArray(expenses?.expenses)) {
+      return expenses.expenses;
+    }
+
+    return [];
+  }, [expenses]);
 
   // ========================================
   // FILTER EXPENSES
   // ========================================
 
   const filteredExpenses = useMemo(() => {
+    const searchText = search.trim().toLowerCase();
+
     return expenseList.filter((expense) => {
-      const title = expense.title || "";
+      const title = String(expense.title || "").toLowerCase();
 
-      const matchesSearch = title
-        .toLowerCase()
-        .includes(search.toLowerCase());
+      const expenseCategory = String(
+        expense.category || ""
+      ).trim();
 
+      // Search filter
+      const matchesSearch =
+        title.includes(searchText);
+
+      // Category filter
       const matchesCategory =
         category === "All" ||
-        expense.category === category;
+        expenseCategory === category;
 
-      return matchesSearch && matchesCategory;
+      return (
+        matchesSearch &&
+        matchesCategory
+      );
     });
   }, [expenseList, search, category]);
 
@@ -83,11 +105,14 @@ function Expenses({
       return "—";
     }
 
-    return formattedDate.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+    return formattedDate.toLocaleDateString(
+      "en-US",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }
+    );
   };
 
   // ========================================
@@ -116,6 +141,9 @@ function Expenses({
 
       case "Education":
         return "📚";
+
+      case "Other":
+        return "•••";
 
       default:
         return "•••";
@@ -160,6 +188,8 @@ function Expenses({
 
       <section className="expenses-summary">
 
+        {/* SHOWING */}
+
         <div className="summary-card">
 
           <span>
@@ -176,6 +206,8 @@ function Expenses({
 
         </div>
 
+
+        {/* TOTAL */}
 
         <div className="summary-card">
 
@@ -258,6 +290,10 @@ function Expenses({
 
         {filteredExpenses.length === 0 ? (
 
+          /* ========================================
+             EMPTY STATE
+          ======================================== */
+
           <div className="no-expenses">
 
             <div className="empty-icon">
@@ -276,6 +312,10 @@ function Expenses({
           </div>
 
         ) : (
+
+          /* ========================================
+             TABLE
+          ======================================== */
 
           <div className="expense-table">
 
@@ -308,86 +348,112 @@ function Expenses({
 
             {/* EXPENSE ROWS */}
 
-            {filteredExpenses.map((expense) => (
+            {filteredExpenses.map((expense) => {
 
-              <div
-                className="expense-row"
-                key={expense._id}
-              >
+              const expenseCategory =
+                String(
+                  expense.category || "Other"
+                ).trim();
 
-                {/* EXPENSE */}
+              return (
+                <div
+                  className="expense-row"
+                  key={expense._id}
+                >
 
-                <div className="expense-name">
+                  {/* ========================================
+                      EXPENSE
+                  ======================================== */}
 
-                  <div className="expense-icon">
-                    {getCategoryIcon(
-                      expense.category
-                    )}
+                  <div className="expense-name">
+
+                    <div className="expense-icon">
+                      {getCategoryIcon(
+                        expenseCategory
+                      )}
+                    </div>
+
+                    <strong>
+                      {expense.title || "Untitled Expense"}
+                    </strong>
+
                   </div>
 
-                  <strong>
-                    {expense.title}
+
+                  {/* ========================================
+                      CATEGORY
+                  ======================================== */}
+
+                  <span className="expense-category">
+                    {expenseCategory}
+                  </span>
+
+
+                  {/* ========================================
+                      DATE
+                  ======================================== */}
+
+                  <span className="expense-date">
+                    {formatDate(
+                      expense.date
+                    )}
+                  </span>
+
+
+                  {/* ========================================
+                      AMOUNT
+                  ======================================== */}
+
+                  <strong className="expense-amount">
+                    -
+                    {formatMoney(
+                      Number(
+                        expense.amount || 0
+                      )
+                    )}
                   </strong>
 
-                </div>
+
+                  {/* ========================================
+                      ACTIONS
+                  ======================================== */}
+
+                  <div className="expense-actions">
+
+                    {/* EDIT */}
+
+                    <button
+                      type="button"
+                      className="edit-btn"
+                      onClick={() =>
+                        onEdit(expense)
+                      }
+                      title="Edit expense"
+                    >
+                      ✏️
+                    </button>
 
 
-                {/* CATEGORY */}
+                    {/* DELETE */}
 
-                <span className="expense-category">
-                  {expense.category}
-                </span>
+                    <button
+                      type="button"
+                      className="delete-btn"
+                      onClick={() =>
+                        onDelete(
+                          expense._id
+                        )
+                      }
+                      title="Delete expense"
+                    >
+                      🗑️
+                    </button>
 
-
-                {/* DATE */}
-
-                <span className="expense-date">
-                  {formatDate(expense.date)}
-                </span>
-
-
-                {/* AMOUNT */}
-
-                <strong className="expense-amount">
-                  -
-                  {formatMoney(
-                    Number(expense.amount || 0)
-                  )}
-                </strong>
-
-
-                {/* ACTIONS */}
-
-                <div className="expense-actions">
-
-                  <button
-                    type="button"
-                    className="edit-btn"
-                    onClick={() =>
-                      onEdit(expense)
-                    }
-                    title="Edit expense"
-                  >
-                    ✏️
-                  </button>
-
-
-                  <button
-                    type="button"
-                    className="delete-btn"
-                    onClick={() =>
-                      onDelete(expense._id)
-                    }
-                    title="Delete expense"
-                  >
-                    🗑️
-                  </button>
+                  </div>
 
                 </div>
-
-              </div>
-
-            ))}
+              );
+            })}
 
           </div>
 

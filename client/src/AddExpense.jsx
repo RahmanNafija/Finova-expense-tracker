@@ -1,12 +1,24 @@
 import { useState } from "react";
 import "./Expenses.css";
 
-const API_URL = "https://finova-expense-tracker.onrender.com/api/expenses";
+const API_URL =
+  "https://finova-expense-tracker.onrender.com/api/expenses";
 
-function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
+function AddExpense({
+  onClose,
+  onExpenseAdded,
+  editingExpense,
+}) {
+  // ========================================
+  // INITIAL FORM DATA
+  // ========================================
+
   const [formData, setFormData] = useState({
     title: editingExpense?.title || "",
-    amount: editingExpense?.amount || "",
+    amount:
+      editingExpense?.amount !== undefined
+        ? editingExpense.amount
+        : "",
     category: editingExpense?.category || "Food",
     date: editingExpense?.date
       ? editingExpense.date.split("T")[0]
@@ -15,6 +27,21 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // ========================================
+  // CATEGORY LIST
+  // ========================================
+
+  const categories = [
+    "Food",
+    "Transport",
+    "Shopping",
+    "Bills",
+    "Entertainment",
+    "Health",
+    "Education",
+    "Other",
+  ];
 
   // ========================================
   // HANDLE INPUT CHANGE
@@ -40,16 +67,39 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
 
     setError("");
 
-    // Basic validation
+    // ----------------------------------------
+    // TITLE VALIDATION
+    // ----------------------------------------
+
     if (!formData.title.trim()) {
       setError("Expense title is required.");
       return;
     }
 
-    if (!formData.amount || Number(formData.amount) <= 0) {
+    // ----------------------------------------
+    // AMOUNT VALIDATION
+    // ----------------------------------------
+
+    if (
+      formData.amount === "" ||
+      Number(formData.amount) <= 0
+    ) {
       setError("Please enter a valid amount.");
       return;
     }
+
+    // ----------------------------------------
+    // CATEGORY VALIDATION
+    // ----------------------------------------
+
+    if (!categories.includes(formData.category)) {
+      setError("Please select a valid category.");
+      return;
+    }
+
+    // ----------------------------------------
+    // DATE VALIDATION
+    // ----------------------------------------
 
     if (!formData.date) {
       setError("Please select a date.");
@@ -59,20 +109,39 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
     setLoading(true);
 
     try {
+      // ========================================
+      // GET TOKEN
+      // ========================================
+
       const token = localStorage.getItem("token");
+
+      if (!token) {
+        throw new Error(
+          "Your session has expired. Please login again."
+        );
+      }
+
+      // ========================================
+      // URL + METHOD
+      // ========================================
 
       const url = editingExpense
         ? `${API_URL}/${editingExpense._id}`
         : API_URL;
 
-      const method = editingExpense ? "PUT" : "POST";
+      const method = editingExpense
+        ? "PUT"
+        : "POST";
+
+      // ========================================
+      // API REQUEST
+      // ========================================
 
       const response = await fetch(url, {
         method,
 
         headers: {
           "Content-Type": "application/json",
-
           Authorization: `Bearer ${token}`,
         },
 
@@ -84,6 +153,10 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
         }),
       });
 
+      // ========================================
+      // RESPONSE
+      // ========================================
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -93,12 +166,20 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
         );
       }
 
-      // Send newly created/updated expense
+      // ========================================
+      // SEND EXPENSE BACK TO DASHBOARD
+      // ========================================
+
       if (onExpenseAdded) {
-        onExpenseAdded(data.expense || data);
+        onExpenseAdded(
+          data.expense || data
+        );
       }
 
-      // Close modal
+      // ========================================
+      // CLOSE MODAL
+      // ========================================
+
       onClose();
 
     } catch (error) {
@@ -134,11 +215,14 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
         }
       >
 
-        {/* ================= HEADER ================= */}
+        {/* ========================================
+            HEADER
+        ======================================== */}
 
         <div className="expense-modal-header">
 
           <div>
+
             <h2>
               {editingExpense
                 ? "Edit Expense"
@@ -150,12 +234,14 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
                 ? "Update your transaction"
                 : "Record a new transaction"}
             </p>
+
           </div>
 
           <button
             type="button"
             className="close-btn"
             onClick={onClose}
+            disabled={loading}
           >
             ×
           </button>
@@ -163,7 +249,9 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
         </div>
 
 
-        {/* ================= ERROR ================= */}
+        {/* ========================================
+            ERROR
+        ======================================== */}
 
         {error && (
           <div className="expense-error">
@@ -172,14 +260,18 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
         )}
 
 
-        {/* ================= FORM ================= */}
+        {/* ========================================
+            FORM
+        ======================================== */}
 
         <form
           className="expense-form"
           onSubmit={handleSubmit}
         >
 
-          {/* TITLE */}
+          {/* ========================================
+              TITLE
+          ======================================== */}
 
           <div className="expense-form-group">
 
@@ -200,7 +292,9 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
           </div>
 
 
-          {/* AMOUNT */}
+          {/* ========================================
+              AMOUNT
+          ======================================== */}
 
           <div className="expense-form-group">
 
@@ -221,61 +315,45 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
 
           </div>
 
-{/* CATEGORY */}
 
-<div className="expense-form-group">
+          {/* ========================================
+              CATEGORY
+          ======================================== */}
 
-  <label htmlFor="expense-category">
-    Category
-  </label>
+          <div className="expense-form-group">
 
-  <div className="expense-select-wrapper">
+            <label htmlFor="expense-category">
+              Category
+            </label>
 
-    <select
-      id="expense-category"
-      name="category"
-      value={formData.category}
-      onChange={handleChange}
-    >
-      <option value="Food">
-        Food
-      </option>
+            <div className="expense-select-wrapper">
 
-      <option value="Transport">
-        Transport
-      </option>
+              <select
+                id="expense-category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+              >
 
-      <option value="Shopping">
-        Shopping
-      </option>
+                {categories.map((item) => (
+                  <option
+                    key={item}
+                    value={item}
+                  >
+                    {item}
+                  </option>
+                ))}
 
-      <option value="Bills">
-        Bills
-      </option>
+              </select>
 
-      <option value="Entertainment">
-        Entertainment
-      </option>
+            </div>
 
-      <option value="Health">
-        Health
-      </option>
-
-      <option value="Education">
-        Education
-      </option>
-
-      <option value="Other">
-        Other
-      </option>
-    </select>
-
-  </div>
-
-</div>
+          </div>
 
 
-          {/* DATE */}
+          {/* ========================================
+              DATE
+          ======================================== */}
 
           <div className="expense-form-group">
 
@@ -294,7 +372,9 @@ function AddExpense({ onClose, onExpenseAdded, editingExpense }) {
           </div>
 
 
-          {/* ACTIONS */}
+          {/* ========================================
+              ACTIONS
+          ======================================== */}
 
           <div className="expense-actions">
 

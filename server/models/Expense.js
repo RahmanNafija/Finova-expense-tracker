@@ -2,17 +2,29 @@ const mongoose = require("mongoose");
 
 const expenseSchema = new mongoose.Schema(
     {
+        // ========================================
+        // EXPENSE TITLE
+        // ========================================
+
         title: {
             type: String,
             required: true,
             trim: true
         },
 
+        // ========================================
+        // AMOUNT
+        // ========================================
+
         amount: {
             type: Number,
             required: true,
             min: 0
         },
+
+        // ========================================
+        // CATEGORY
+        // ========================================
 
         category: {
             type: String,
@@ -23,9 +35,15 @@ const expenseSchema = new mongoose.Schema(
                 "Shopping",
                 "Bills",
                 "Entertainment",
+                "Health",
+                "Education",
                 "Other"
             ]
         },
+
+        // ========================================
+        // DATE
+        // ========================================
 
         date: {
             type: Date,
@@ -33,13 +51,20 @@ const expenseSchema = new mongoose.Schema(
             default: Date.now
         },
 
+        // ========================================
+        // DESCRIPTION
+        // ========================================
+
         description: {
             type: String,
             trim: true,
             default: ""
         },
 
-        // User who owns this expense
+        // ========================================
+        // USER
+        // ========================================
+
         user: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

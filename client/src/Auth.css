@@ -5,6 +5,7 @@
 .auth-page {
   min-height: 100vh;
   width: 100%;
+
   background: #f2faf7;
 
   display: flex;
@@ -12,6 +13,7 @@
   align-items: center;
 
   padding: 40px 20px;
+
   box-sizing: border-box;
 }
 
@@ -146,15 +148,17 @@
   border-color: #4dbb8d;
 
   box-shadow:
-    0 0 0 4px rgba(77, 187, 141, 0.10);
+    0 0 0 4px rgba(77, 187, 141, 0.1);
 }
 
 
 /* ========================================
-   ERROR / SUCCESS
+   ERROR
 ======================================== */
 
 .auth-error {
+  width: 100%;
+
   margin-bottom: 18px;
 
   padding: 12px 14px;
@@ -171,7 +175,14 @@
   box-sizing: border-box;
 }
 
+
+/* ========================================
+   SUCCESS
+======================================== */
+
 .auth-success {
+  width: 100%;
+
   margin-bottom: 18px;
 
   padding: 12px 14px;
@@ -201,7 +212,6 @@
   border-radius: 12px;
 
   background: #4dbb8d;
-
   color: white;
 
   font-size: 15px;
@@ -210,13 +220,16 @@
   cursor: pointer;
 
   box-shadow:
-    0 8px 20px rgba(77, 187, 141, 0.20);
+    0 8px 20px rgba(77, 187, 141, 0.2);
 
   transition:
     background 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
+
+
+/* BUTTON HOVER */
 
 .auth-submit:hover {
   background: #3eaa7d;
@@ -227,12 +240,19 @@
     0 10px 24px rgba(77, 187, 141, 0.25);
 }
 
+
+/* BUTTON ACTIVE */
+
 .auth-submit:active {
   transform: translateY(0);
 }
 
+
+/* BUTTON DISABLED */
+
 .auth-submit:disabled {
   opacity: 0.7;
+
   cursor: not-allowed;
 
   transform: none;
@@ -248,15 +268,9 @@
 
   display: flex;
   align-items: center;
-  justify-content: center;
 
   gap: 14px;
 
-  /*
-    Important:
-    Keep enough space between button,
-    divider and signup section.
-  */
   margin: 30px 0 24px;
 
   box-sizing: border-box;
@@ -277,21 +291,23 @@
 }
 
 
-/* "OR" TEXT */
+/* ========================================
+   OR TEXT
+======================================== */
 
-.auth-divider span {
-  flex: 0 0 auto;
+.auth-divider p {
+  margin: 0;
+
+  padding: 0 4px;
 
   color: #8aa7a2;
 
-  background: transparent;
+  background: #f2faf7;
 
   font-size: 13px;
   font-weight: 400;
 
   line-height: 1;
-
-  padding: 0 2px;
 
   white-space: nowrap;
 }
@@ -306,7 +322,6 @@
   width: 100%;
 
   display: flex;
-
   justify-content: center;
   align-items: center;
 
@@ -315,13 +330,15 @@
   color: #608486;
 
   font-size: 14px;
-
   line-height: 1.5;
 
   text-align: center;
 
   box-sizing: border-box;
 }
+
+
+/* LOGIN SWITCH BUTTON */
 
 .auth-switch button {
   padding: 0;
@@ -337,6 +354,9 @@
 
   cursor: pointer;
 }
+
+
+/* LOGIN SWITCH HOVER */
 
 .auth-switch button:hover {
   color: #218b61;
@@ -354,7 +374,6 @@
   width: 100%;
 
   display: flex;
-
   justify-content: center;
   align-items: center;
 
@@ -365,7 +384,6 @@
   color: #608486;
 
   font-size: 14px;
-
   line-height: 1.5;
 
   text-align: center;
@@ -391,6 +409,7 @@
 
 .signup-link {
   display: inline-flex;
+
   align-items: center;
 
   padding: 0;
@@ -411,6 +430,9 @@
 
   white-space: nowrap;
 }
+
+
+/* SIGNUP LINK HOVER */
 
 .signup-link:hover {
   color: #218b61;
@@ -433,21 +455,26 @@
     padding: 50px 24px;
   }
 
+
   .auth-container {
     max-width: 100%;
   }
+
 
   .auth-heading {
     margin-bottom: 30px;
   }
 
+
   .auth-heading h1 {
     font-size: 34px;
   }
 
+
   .auth-subtitle {
     font-size: 15px;
   }
+
 
   .auth-divider {
     margin: 26px 0 22px;
@@ -455,9 +482,11 @@
     gap: 12px;
   }
 
+
   .signup-prompt {
     font-size: 13px;
   }
+
 
   .signup-prompt span,
   .signup-link {
