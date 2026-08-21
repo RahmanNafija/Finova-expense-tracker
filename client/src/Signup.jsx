@@ -1,6 +1,10 @@
 import { useState } from "react";
 import "./Auth.css";
 import "./Login.css";
+
+const API_URL =
+  "https://finova-expense-tracker.onrender.com";
+
 function Signup({ onSwitchToLogin }) {
   const [formData, setFormData] = useState({
     name: "",
@@ -11,19 +15,35 @@ function Signup({ onSwitchToLogin }) {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // ========================================
+  // HANDLE INPUT
+  // ========================================
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((previous) => ({
+      ...previous,
       [e.target.name]: e.target.value,
-    });
+    }));
+
+    setError("");
+    setSuccess("");
   };
+
+  // ========================================
+  // SIGNUP
+  // ========================================
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     setError("");
     setSuccess("");
+
+    // ========================================
+    // VALIDATION
+    // ========================================
 
     if (
       !formData.name ||
@@ -36,23 +56,36 @@ function Signup({ onSwitchToLogin }) {
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+      setError(
+        "Password must be at least 6 characters."
+      );
       return;
     }
 
-    if (formData.password !== formData.confirmPassword) {
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
       setError("Passwords do not match.");
       return;
     }
 
+    setLoading(true);
+
     try {
+      // ========================================
+      // API REQUEST
+      // ========================================
+
       const response = await fetch(
-        "https://finova-expense-tracker.onrender.com",
+        `${API_URL}/api/auth/signup`,
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -61,13 +94,50 @@ function Signup({ onSwitchToLogin }) {
         }
       );
 
-      const data = await response.json();
+      // ========================================
+      // HANDLE RESPONSE
+      // ========================================
 
-      if (!response.ok) {
-        throw new Error(data.message || "Signup failed.");
+      const contentType =
+        response.headers.get("content-type");
+
+      let data;
+
+      if (
+        contentType &&
+        contentType.includes("application/json")
+      ) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+
+        console.error(
+          "Server returned non-JSON response:",
+          text
+        );
+
+        throw new Error(
+          "Server returned an invalid response. Please try again."
+        );
       }
 
-      setSuccess("Account created successfully!");
+      // ========================================
+      // HANDLE API ERROR
+      // ========================================
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Signup failed."
+        );
+      }
+
+      // ========================================
+      // SUCCESS
+      // ========================================
+
+      setSuccess(
+        "Account created successfully!"
+      );
 
       setFormData({
         name: "",
@@ -76,126 +146,224 @@ function Signup({ onSwitchToLogin }) {
         confirmPassword: "",
       });
 
+      // ========================================
+      // GO TO LOGIN
+      // ========================================
+
       setTimeout(() => {
         onSwitchToLogin();
       }, 1200);
+
     } catch (error) {
-      setError(error.message);
+      console.error(
+        "Signup error:",
+        error
+      );
+
+      setError(
+        error.message ||
+        "Something went wrong. Please try again."
+      );
+
+    } finally {
+      setLoading(false);
     }
   };
+
+  // ========================================
+  // UI
+  // ========================================
 
   return (
     <div className="auth-page">
 
       <div className="auth-container">
 
-        {/* Logo */}
-       <div className="auth-logo">
-            F
-            </div>
+        {/* ========================================
+            LOGO
+        ======================================== */}
 
-        {/* Heading */}
+        <div className="auth-logo">
+          F
+        </div>
+
+
+        {/* ========================================
+            HEADING
+        ======================================== */}
+
         <div className="auth-heading">
+
           <p className="auth-welcome">
             WELCOME TO FINOVA ✨
           </p>
 
-          <h1>Create your account</h1>
+          <h1>
+            Create your account
+          </h1>
 
           <p className="auth-subtitle">
-            Start taking control of your spending today.
+            Start taking control of your
+            spending today.
           </p>
+
         </div>
 
-        {/* Form */}
-        <form className="auth-form" onSubmit={handleSubmit}>
 
-          {/* Name */}
+        {/* ========================================
+            FORM
+        ======================================== */}
+
+        <form
+          className="auth-form"
+          onSubmit={handleSubmit}
+        >
+
+          {/* NAME */}
+
           <div className="form-group">
-            <label>Full Name</label>
+
+            <label htmlFor="name">
+              Full Name
+            </label>
 
             <input
+              id="name"
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               placeholder="Enter your name"
+              required
             />
+
           </div>
 
-          {/* Email */}
+
+          {/* EMAIL */}
+
           <div className="form-group">
-            <label>Email address</label>
+
+            <label htmlFor="email">
+              Email address
+            </label>
 
             <input
+              id="email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               placeholder="you@example.com"
+              required
             />
+
           </div>
 
-          {/* Password */}
+
+          {/* PASSWORD */}
+
           <div className="form-group">
-            <label>Password</label>
+
+            <label htmlFor="password">
+              Password
+            </label>
 
             <input
+              id="password"
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               placeholder="At least 6 characters"
+              required
             />
+
           </div>
 
-          {/* Confirm Password */}
+
+          {/* CONFIRM PASSWORD */}
+
           <div className="form-group">
-            <label>Confirm Password</label>
+
+            <label htmlFor="confirmPassword">
+              Confirm Password
+            </label>
 
             <input
+              id="confirmPassword"
               type="password"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirm your password"
+              required
             />
+
           </div>
 
-          {/* Error */}
+
+          {/* ERROR */}
+
           {error && (
             <div className="auth-error">
-              {error}
+              ⚠️ {error}
             </div>
           )}
 
-          {/* Success */}
+
+          {/* SUCCESS */}
+
           {success && (
             <div className="auth-success">
-              {success}
+              ✅ {success}
             </div>
           )}
 
-          {/* Submit */}
+
+          {/* SUBMIT */}
+
           <button
             type="submit"
             className="auth-submit"
+            disabled={loading}
           >
-            Create Account
+
+            {loading
+              ? "Creating account..."
+              : "Create Account"}
+
           </button>
 
         </form>
 
-        {/* Divider */}
+
+        {/* ========================================
+            DIVIDER
+        ======================================== */}
+
         <div className="auth-divider">
+
           <span></span>
-          <p>or</p>
+
+          <p>
+            or
+          </p>
+
           <span></span>
+
         </div>
 
-        {/* Login */}
+
+        {/* ========================================
+            LOGIN
+        ======================================== */}
+
         <div className="auth-switch">
-          <span>Already have an account?</span>
+
+          <span>
+            Already have an account?
+          </span>
 
           <button
             type="button"
@@ -203,6 +371,7 @@ function Signup({ onSwitchToLogin }) {
           >
             Sign in
           </button>
+
         </div>
 
       </div>

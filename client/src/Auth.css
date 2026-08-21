@@ -78,7 +78,6 @@
 
   font-size: 40px;
   line-height: 1.15;
-
   font-weight: 800;
 }
 
@@ -146,7 +145,8 @@
 .form-group input:focus {
   border-color: #4dbb8d;
 
-  box-shadow: 0 0 0 4px rgba(77, 187, 141, 0.10);
+  box-shadow:
+    0 0 0 4px rgba(77, 187, 141, 0.10);
 }
 
 
@@ -167,6 +167,8 @@
   color: #c94a4a;
 
   font-size: 13px;
+
+  box-sizing: border-box;
 }
 
 .auth-success {
@@ -182,6 +184,8 @@
   color: #267a59;
 
   font-size: 13px;
+
+  box-sizing: border-box;
 }
 
 
@@ -197,6 +201,7 @@
   border-radius: 12px;
 
   background: #4dbb8d;
+
   color: white;
 
   font-size: 15px;
@@ -204,7 +209,8 @@
 
   cursor: pointer;
 
-  box-shadow: 0 8px 20px rgba(77, 187, 141, 0.20);
+  box-shadow:
+    0 8px 20px rgba(77, 187, 141, 0.20);
 
   transition:
     background 0.2s ease,
@@ -217,11 +223,19 @@
 
   transform: translateY(-1px);
 
-  box-shadow: 0 10px 24px rgba(77, 187, 141, 0.25);
+  box-shadow:
+    0 10px 24px rgba(77, 187, 141, 0.25);
 }
 
 .auth-submit:active {
   transform: translateY(0);
+}
+
+.auth-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+
+  transform: none;
 }
 
 
@@ -238,11 +252,18 @@
 
   gap: 14px;
 
-  margin: 34px 0;
+  /*
+    Important:
+    Keep enough space between button,
+    divider and signup section.
+  */
+  margin: 30px 0 24px;
+
+  box-sizing: border-box;
 }
 
 
-/* LEFT LINE */
+/* LEFT + RIGHT LINES */
 
 .auth-divider::before,
 .auth-divider::after {
@@ -261,25 +282,29 @@
 .auth-divider span {
   flex: 0 0 auto;
 
-  height: auto;
+  color: #8aa7a2;
 
   background: transparent;
 
-  color: #8aa7a2;
-
   font-size: 13px;
+  font-weight: 400;
 
   line-height: 1;
 
-  padding: 0;
+  padding: 0 2px;
+
+  white-space: nowrap;
 }
 
 
 /* ========================================
    LOGIN SWITCH
+   Used by Signup page
 ======================================== */
 
 .auth-switch {
+  width: 100%;
+
   display: flex;
 
   justify-content: center;
@@ -291,13 +316,18 @@
 
   font-size: 14px;
 
+  line-height: 1.5;
+
   text-align: center;
+
+  box-sizing: border-box;
 }
 
 .auth-switch button {
   padding: 0;
 
   border: none;
+
   background: transparent;
 
   color: #2eaa78;
@@ -328,13 +358,30 @@
   justify-content: center;
   align-items: center;
 
-  gap: 5px;
+  gap: 6px;
+
+  margin-top: 0;
 
   color: #608486;
 
   font-size: 14px;
 
+  line-height: 1.5;
+
   text-align: center;
+
+  box-sizing: border-box;
+}
+
+
+/* NORMAL TEXT */
+
+.signup-prompt span {
+  color: #608486;
+
+  font-size: 14px;
+
+  white-space: nowrap;
 }
 
 
@@ -343,9 +390,14 @@
 ======================================== */
 
 .signup-link {
+  display: inline-flex;
+  align-items: center;
+
   padding: 0;
+  margin: 0;
 
   border: none;
+
   background: transparent;
 
   color: #2eaa78;
@@ -353,7 +405,11 @@
   font-size: 14px;
   font-weight: 700;
 
+  line-height: 1.5;
+
   cursor: pointer;
+
+  white-space: nowrap;
 }
 
 .signup-link:hover {
@@ -364,12 +420,14 @@
 
 
 /* ========================================
-   RESPONSIVE
+   MOBILE RESPONSIVE
 ======================================== */
 
 @media (max-width: 600px) {
 
   .auth-page {
+    min-height: 100vh;
+
     align-items: flex-start;
 
     padding: 50px 24px;
@@ -377,6 +435,10 @@
 
   .auth-container {
     max-width: 100%;
+  }
+
+  .auth-heading {
+    margin-bottom: 30px;
   }
 
   .auth-heading h1 {
@@ -387,4 +449,18 @@
     font-size: 15px;
   }
 
+  .auth-divider {
+    margin: 26px 0 22px;
+
+    gap: 12px;
+  }
+
+  .signup-prompt {
+    font-size: 13px;
+  }
+
+  .signup-prompt span,
+  .signup-link {
+    font-size: 13px;
+  }
 }

@@ -43,17 +43,49 @@ function Login({
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
-        method: "POST",
+      const response = await fetch(
+        `${API_URL}/api/auth/login`,
+        {
+          method: "POST",
 
-        headers: {
-          "Content-Type": "application/json",
-        },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-        body: JSON.stringify(formData),
-      });
+          body: JSON.stringify(formData),
+        }
+      );
 
-      const data = await response.json();
+      // ========================================
+      // CHECK RESPONSE
+      // ========================================
+
+      const contentType =
+        response.headers.get("content-type");
+
+      let data;
+
+      if (
+        contentType &&
+        contentType.includes("application/json")
+      ) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+
+        console.error(
+          "Server returned non-JSON response:",
+          text
+        );
+
+        throw new Error(
+          "Server returned an invalid response. Please try again."
+        );
+      }
+
+      // ========================================
+      // HANDLE ERROR RESPONSE
+      // ========================================
 
       if (!response.ok) {
         throw new Error(
@@ -61,19 +93,28 @@ function Login({
         );
       }
 
-      // Save token
+      // ========================================
+      // SAVE TOKEN
+      // ========================================
+
       localStorage.setItem(
         "token",
         data.token
       );
 
-      // Save user
+      // ========================================
+      // SAVE USER
+      // ========================================
+
       localStorage.setItem(
         "user",
         JSON.stringify(data.user)
       );
 
-      // Send user data to App
+      // ========================================
+      // SEND USER TO APP
+      // ========================================
+
       onLogin(data.user);
 
     } catch (error) {
@@ -96,7 +137,9 @@ function Login({
   return (
     <div className="auth-page">
 
-      {/* ================= LEFT SIDE ================= */}
+      {/* ========================================
+          LEFT SIDE
+      ======================================== */}
 
       <div className="auth-brand-section">
 
@@ -117,26 +160,34 @@ function Login({
         </p>
 
         <div className="auth-decoration">
+
           <div className="circle circle-one"></div>
+
           <div className="circle circle-two"></div>
+
           <div className="circle circle-three"></div>
+
         </div>
 
       </div>
 
 
-      {/* ================= RIGHT SIDE ================= */}
+      {/* ========================================
+          RIGHT SIDE
+      ======================================== */}
 
       <div className="auth-form-section">
 
         <div className="auth-card">
 
-          {/* HEADER */}
+          {/* ========================================
+              HEADER
+          ======================================== */}
 
           <div className="auth-header">
 
             <div className="mobile-logo">
-              S
+              F
             </div>
 
             <p className="auth-welcome">
@@ -155,7 +206,9 @@ function Login({
           </div>
 
 
-          {/* ERROR */}
+          {/* ========================================
+              ERROR
+          ======================================== */}
 
           {error && (
             <div className="auth-error">
@@ -164,7 +217,9 @@ function Login({
           )}
 
 
-          {/* FORM */}
+          {/* ========================================
+              FORM
+          ======================================== */}
 
           <form
             className="auth-form"
@@ -201,8 +256,6 @@ function Login({
                 <label htmlFor="password">
                   Password
                 </label>
-
-                {/* FORGOT PASSWORD */}
 
                 <button
                   type="button"
@@ -244,10 +297,14 @@ function Login({
           </form>
 
 
-          {/* SIGNUP */}
+          {/* ========================================
+              SIGNUP
+          ======================================== */}
 
           <div className="auth-divider">
-            <span>or</span>
+            <span>
+              or
+            </span>
           </div>
 
           <div className="signup-prompt">
