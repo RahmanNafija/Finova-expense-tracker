@@ -5,7 +5,8 @@ import AddExpense from "./AddExpense";
 import EditExpense from "./EditExpense";
 import Expenses from "./Expenses";
 
-const API_URL = "https://finova-expense-tracker.onrender.com";
+const API_URL =
+  "https://finova-expense-tracker.onrender.com/api/expenses";
 
 function Dashboard({ user, onLogout }) {
   const [expenses, setExpenses] = useState([]);
@@ -19,10 +20,6 @@ function Dashboard({ user, onLogout }) {
   const [editingExpense, setEditingExpense] =
     useState(null);
 
-  // ========================================
-  // SHOW ALL EXPENSES PAGE
-  // ========================================
-
   const [showAllExpenses, setShowAllExpenses] =
     useState(false);
 
@@ -34,45 +31,54 @@ function Dashboard({ user, onLogout }) {
     try {
       setLoading(true);
 
-      const token =
-        localStorage.getItem("token");
+      const token = localStorage.getItem("token");
 
       if (!token) {
-        console.error(
-          "No login token found."
-        );
-
+        console.error("No login token found.");
+        setExpenses([]);
         return;
       }
 
-      const response = await fetch(
-        API_URL,
-        {
-          method: "GET",
+      const response = await fetch(API_URL, {
+        method: "GET",
 
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            "Failed to fetch expenses"
+          data.message || "Failed to fetch expenses"
         );
       }
 
-      setExpenses(data);
+      // Backend may return:
+      // 1. [expense, expense, ...]
+      // OR
+      // 2. { expenses: [...] }
 
+      if (Array.isArray(data)) {
+        setExpenses(data);
+      } else if (Array.isArray(data.expenses)) {
+        setExpenses(data.expenses);
+      } else {
+        console.error(
+          "Unexpected expenses response:",
+          data
+        );
+
+        setExpenses([]);
+      }
     } catch (error) {
       console.error(
         "Error fetching expenses:",
         error
       );
 
+      setExpenses([]);
     } finally {
       setLoading(false);
     }
@@ -90,15 +96,15 @@ function Dashboard({ user, onLogout }) {
   // ADD EXPENSE
   // ========================================
 
-  const handleExpenseAdded = (
-    newExpense
-  ) => {
-    setExpenses(
-      (previousExpenses) => [
-        newExpense,
-        ...previousExpenses,
-      ]
-    );
+  const handleExpenseAdded = (newExpense) => {
+    if (!newExpense) {
+      return;
+    }
+
+    setExpenses((previousExpenses) => [
+      newExpense,
+      ...previousExpenses,
+    ]);
 
     setShowAddExpense(false);
   };
@@ -110,15 +116,16 @@ function Dashboard({ user, onLogout }) {
   const handleExpenseUpdated = (
     updatedExpense
   ) => {
-    setExpenses(
-      (previousExpenses) =>
-        previousExpenses.map(
-          (expense) =>
-            expense._id ===
-            updatedExpense._id
-              ? updatedExpense
-              : expense
-        )
+    if (!updatedExpense) {
+      return;
+    }
+
+    setExpenses((previousExpenses) =>
+      previousExpenses.map((expense) =>
+        expense._id === updatedExpense._id
+          ? updatedExpense
+          : expense
+      )
     );
 
     setEditingExpense(null);
@@ -162,8 +169,7 @@ function Dashboard({ user, onLogout }) {
         }
       );
 
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -172,14 +178,12 @@ function Dashboard({ user, onLogout }) {
         );
       }
 
-      setExpenses(
-        (previousExpenses) =>
-          previousExpenses.filter(
-            (expense) =>
-              expense._id !== expenseId
-          )
+      setExpenses((previousExpenses) =>
+        previousExpenses.filter(
+          (expense) =>
+            expense._id !== expenseId
+        )
       );
-
     } catch (error) {
       console.error(
         "Delete expense error:",
@@ -190,38 +194,31 @@ function Dashboard({ user, onLogout }) {
         error.message ||
           "Something went wrong while deleting the expense."
       );
-
     } finally {
       setDeletingId(null);
     }
   };
 
   // ========================================
-  // IF ALL EXPENSES PAGE IS OPEN
+  // ALL EXPENSES PAGE
   // ========================================
 
   if (showAllExpenses) {
     return (
       <Expenses
         expenses={expenses}
-
         onBack={() =>
           setShowAllExpenses(false)
         }
-
         onEdit={(expense) => {
           setEditingExpense(expense);
           setShowAllExpenses(false);
         }}
-
         onDelete={handleDeleteExpense}
-
         onAddExpense={() =>
           setShowAddExpense(true)
         }
-
         user={user}
-
         onLogout={onLogout}
       />
     );
@@ -231,50 +228,47 @@ function Dashboard({ user, onLogout }) {
   // CALCULATIONS
   // ========================================
 
-  const totalSpent =
-    expenses.reduce(
-      (total, expense) =>
-        total +
-        Number(expense.amount),
-      0
-    );
+  const totalSpent = expenses.reduce(
+    (total, expense) =>
+      total + Number(expense.amount || 0),
+    0
+  );
 
-  const currentDate =
-    new Date();
+  const currentDate = new Date();
 
-  const monthlyExpenses =
-    expenses.filter(
-      (expense) => {
-        const expenseDate =
-          new Date(
-            expense.date
-          );
-
-        return (
-          expenseDate.getMonth() ===
-            currentDate.getMonth() &&
-          expenseDate.getFullYear() ===
-            currentDate.getFullYear()
-        );
+  const monthlyExpenses = expenses.filter(
+    (expense) => {
+      if (!expense.date) {
+        return false;
       }
-    );
+
+      const expenseDate =
+        new Date(expense.date);
+
+      return (
+        expenseDate.getMonth() ===
+          currentDate.getMonth() &&
+        expenseDate.getFullYear() ===
+          currentDate.getFullYear()
+      );
+    }
+  );
 
   const monthlySpending =
     monthlyExpenses.reduce(
       (total, expense) =>
         total +
-        Number(expense.amount),
+        Number(expense.amount || 0),
       0
     );
 
-  const recentExpenses =
-    [...expenses]
-      .sort(
-        (a, b) =>
-          new Date(b.date) -
-          new Date(a.date)
-      )
-      .slice(0, 5);
+  const recentExpenses = [...expenses]
+    .sort(
+      (a, b) =>
+        new Date(b.date) -
+        new Date(a.date)
+    )
+    .slice(0, 5);
 
   // ========================================
   // CATEGORIES
@@ -289,54 +283,45 @@ function Dashboard({ user, onLogout }) {
     "Other",
   ];
 
-  const categoryTotals =
-    categories.map(
-      (category) => {
-        const total =
-          expenses
-            .filter(
-              (expense) =>
-                expense.category ===
-                category
-            )
-            .reduce(
-              (sum, expense) =>
-                sum +
-                Number(
-                  expense.amount
-                ),
-              0
-            );
+  const categoryTotals = categories.map(
+    (category) => {
+      const total = expenses
+        .filter(
+          (expense) =>
+            expense.category === category
+        )
+        .reduce(
+          (sum, expense) =>
+            sum +
+            Number(expense.amount || 0),
+          0
+        );
 
-        return {
-          name: category,
-          total,
-        };
-      }
-    );
+      return {
+        name: category,
+        total,
+      };
+    }
+  );
 
   // ========================================
   // FORMAT MONEY
   // ========================================
 
-  const formatMoney = (
-    amount
-  ) => {
-    return `৳${amount.toFixed(
-      2
-    )}`;
+  const formatMoney = (amount) => {
+    return `৳${Number(amount).toFixed(2)}`;
   };
 
   // ========================================
   // FORMAT DATE
   // ========================================
 
-  const formatDate = (
-    date
-  ) => {
-    return new Date(
-      date
-    ).toLocaleDateString(
+  const formatDate = (date) => {
+    if (!date) {
+      return "—";
+    }
+
+    return new Date(date).toLocaleDateString(
       "en-US",
       {
         day: "numeric",
@@ -350,9 +335,7 @@ function Dashboard({ user, onLogout }) {
   // CATEGORY ICON
   // ========================================
 
-  const getCategoryIcon = (
-    category
-  ) => {
+  const getCategoryIcon = (category) => {
     switch (category) {
       case "Food":
         return "🍴";
@@ -368,6 +351,12 @@ function Dashboard({ user, onLogout }) {
 
       case "Entertainment":
         return "🎮";
+
+      case "Health":
+        return "❤️";
+
+      case "Education":
+        return "📚";
 
       default:
         return "•••";
@@ -388,13 +377,11 @@ function Dashboard({ user, onLogout }) {
         <div className="brand">
 
           <div className="brand-icon">
-            S
+            F
           </div>
 
           <div>
-            <h2>
-              Finova
-            </h2>
+            <h2>Finova</h2>
 
             <span>
               Smart Finance,
@@ -407,24 +394,22 @@ function Dashboard({ user, onLogout }) {
         <div className="header-right">
 
           <span>
-            Hi, {user.name}
+            Hi, {user?.name || "User"}
           </span>
 
           <button
+            type="button"
             className="logout-btn"
-            onClick={
-              onLogout
-            }
+            onClick={onLogout}
           >
             Logout
           </button>
 
           <button
+            type="button"
             className="add-expense-btn"
             onClick={() =>
-              setShowAddExpense(
-                true
-              )
+              setShowAddExpense(true)
             }
           >
             + Add Expense
@@ -466,19 +451,14 @@ function Dashboard({ user, onLogout }) {
           </div>
 
           <div className="date-badge">
-
             📅{" "}
-
             {currentDate.toLocaleDateString(
               "en-US",
               {
-                month:
-                  "long",
-                year:
-                  "numeric",
+                month: "long",
+                year: "numeric",
               }
             )}
-
           </div>
 
         </section>
@@ -496,21 +476,15 @@ function Dashboard({ user, onLogout }) {
 
             <div className="stat-content">
 
-              <span>
-                Total Spent
-              </span>
+              <span>Total Spent</span>
 
               <h2>
                 {loading
                   ? "Loading..."
-                  : formatMoney(
-                      totalSpent
-                    )}
+                  : formatMoney(totalSpent)}
               </h2>
 
-              <small>
-                All time
-              </small>
+              <small>All time</small>
 
             </div>
 
@@ -592,18 +566,16 @@ function Dashboard({ user, onLogout }) {
                 </h2>
 
                 <p>
-                  Your latest
-                  transactions
+                  Your latest transactions
                 </p>
 
               </div>
 
               <button
+                type="button"
                 className="view-all"
                 onClick={() =>
-                  setShowAllExpenses(
-                    true
-                  )
+                  setShowAllExpenses(true)
                 }
               >
                 View all →
@@ -615,8 +587,7 @@ function Dashboard({ user, onLogout }) {
             {loading ? (
 
               <div className="empty-state">
-                Loading
-                expenses...
+                Loading expenses...
               </div>
 
             ) : recentExpenses.length ===
@@ -633,11 +604,9 @@ function Dashboard({ user, onLogout }) {
                 </h3>
 
                 <p>
-                  Add your first
-                  expense and
-                  start keeping
-                  track of where
-                  your money goes.
+                  Add your first expense
+                  and start keeping track
+                  of where your money goes.
                 </p>
 
               </div>
@@ -651,9 +620,7 @@ function Dashboard({ user, onLogout }) {
 
                     <div
                       className="expense-item"
-                      key={
-                        expense._id
-                      }
+                      key={expense._id}
                     >
 
                       <div className="expense-left">
@@ -667,15 +634,11 @@ function Dashboard({ user, onLogout }) {
                         <div>
 
                           <h3>
-                            {
-                              expense.title
-                            }
+                            {expense.title}
                           </h3>
 
                           <p>
-                            {
-                              expense.category
-                            }
+                            {expense.category}
                             {" • "}
                             {formatDate(
                               expense.date
@@ -693,12 +656,13 @@ function Dashboard({ user, onLogout }) {
                           -
                           {formatMoney(
                             Number(
-                              expense.amount
+                              expense.amount || 0
                             )
                           )}
                         </strong>
 
                         <button
+                          type="button"
                           className="edit-expense-btn"
                           onClick={() =>
                             setEditingExpense(
@@ -711,6 +675,7 @@ function Dashboard({ user, onLogout }) {
                         </button>
 
                         <button
+                          type="button"
                           className="delete-expense-btn"
                           onClick={() =>
                             handleDeleteExpense(
@@ -752,13 +717,11 @@ function Dashboard({ user, onLogout }) {
               <div>
 
                 <h2>
-                  Spending
-                  Categories
+                  Spending Categories
                 </h2>
 
                 <p>
-                  Where your
-                  money goes
+                  Where your money goes
                 </p>
 
               </div>
@@ -772,9 +735,7 @@ function Dashboard({ user, onLogout }) {
 
                   <div
                     className="category-item"
-                    key={
-                      category.name
-                    }
+                    key={category.name}
                   >
 
                     <div className="category-left">
@@ -786,9 +747,7 @@ function Dashboard({ user, onLogout }) {
                       </div>
 
                       <span>
-                        {
-                          category.name
-                        }
+                        {category.name}
                       </span>
 
                     </div>
@@ -821,9 +780,7 @@ function Dashboard({ user, onLogout }) {
             handleExpenseAdded
           }
           onClose={() =>
-            setShowAddExpense(
-              false
-            )
+            setShowAddExpense(false)
           }
         />
       )}
@@ -833,18 +790,12 @@ function Dashboard({ user, onLogout }) {
 
       {editingExpense && (
         <EditExpense
-          expense={
-            editingExpense
-          }
-
+          expense={editingExpense}
           onExpenseUpdated={
             handleExpenseUpdated
           }
-
           onClose={() =>
-            setEditingExpense(
-              null
-            )
+            setEditingExpense(null)
           }
         />
       )}
