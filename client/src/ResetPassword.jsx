@@ -1,11 +1,17 @@
 import { useState } from "react";
 import "./Auth.css";
 
-const API_URL = "https://finova-expense-tracker.onrender.com";
+const API_URL =
+  "https://finova-expense-tracker.onrender.com";
 
-function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
+function ResetPassword({
+  token,
+  onResetSuccess,
+  onBackToLogin,
+}) {
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -21,13 +27,32 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
     setError("");
     setSuccess("");
 
-    // Check password length
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    // ========================================
+    // CHECK TOKEN
+    // ========================================
+
+    if (!token) {
+      setError(
+        "Password reset token is missing. Please request a new reset link."
+      );
       return;
     }
 
-    // Check passwords match
+    // ========================================
+    // PASSWORD VALIDATION
+    // ========================================
+
+    if (password.length < 6) {
+      setError(
+        "Password must be at least 6 characters"
+      );
+      return;
+    }
+
+    // ========================================
+    // CONFIRM PASSWORD
+    // ========================================
+
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -36,8 +61,12 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
     setLoading(true);
 
     try {
+      // ========================================
+      // API REQUEST
+      // ========================================
+
       const response = await fetch(
-        `${API_URL}/reset-password`,
+        `${API_URL}/api/auth/reset-password`,
         {
           method: "POST",
 
@@ -52,13 +81,48 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
         }
       );
 
-      const data = await response.json();
+      // ========================================
+      // READ RESPONSE SAFELY
+      // ========================================
+
+      const contentType =
+        response.headers.get("content-type") || "";
+
+      let data;
+
+      if (
+        contentType.includes(
+          "application/json"
+        )
+      ) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+
+        console.error(
+          "Server returned non-JSON response:",
+          text
+        );
+
+        throw new Error(
+          "Server returned an invalid response. Please try again."
+        );
+      }
+
+      // ========================================
+      // HANDLE API ERROR
+      // ========================================
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to reset password"
+          data.message ||
+            "Failed to reset password"
         );
       }
+
+      // ========================================
+      // SUCCESS
+      // ========================================
 
       setSuccess(
         "Password reset successfully!"
@@ -67,7 +131,10 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
       setPassword("");
       setConfirmPassword("");
 
-      // Go back to login after a short delay
+      // ========================================
+      // RETURN TO LOGIN
+      // ========================================
+
       setTimeout(() => {
         onResetSuccess();
       }, 1500);
@@ -80,7 +147,7 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
 
       setError(
         error.message ||
-        "Something went wrong. Please try again."
+          "Something went wrong. Please try again."
       );
 
     } finally {
@@ -95,7 +162,9 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
   return (
     <div className="auth-page">
 
-      {/* ================= LEFT SIDE ================= */}
+      {/* ========================================
+          LEFT SIDE
+      ======================================== */}
 
       <div className="auth-brand-section">
 
@@ -116,21 +185,29 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
         </p>
 
         <div className="auth-decoration">
+
           <div className="circle circle-one"></div>
+
           <div className="circle circle-two"></div>
+
           <div className="circle circle-three"></div>
+
         </div>
 
       </div>
 
 
-      {/* ================= RIGHT SIDE ================= */}
+      {/* ========================================
+          RIGHT SIDE
+      ======================================== */}
 
       <div className="auth-form-section">
 
         <div className="auth-card">
 
-          {/* HEADER */}
+          {/* ========================================
+              HEADER
+          ======================================== */}
 
           <div className="auth-header">
 
@@ -150,7 +227,9 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
           </div>
 
 
-          {/* ERROR */}
+          {/* ========================================
+              ERROR
+          ======================================== */}
 
           {error && (
             <div className="auth-error">
@@ -159,7 +238,9 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
           )}
 
 
-          {/* SUCCESS */}
+          {/* ========================================
+              SUCCESS
+          ======================================== */}
 
           {success && (
             <div className="auth-success">
@@ -168,14 +249,18 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
           )}
 
 
-          {/* FORM */}
+          {/* ========================================
+              FORM
+          ======================================== */}
 
           <form
             className="auth-form"
             onSubmit={handleSubmit}
           >
 
-            {/* NEW PASSWORD */}
+            {/* ========================================
+                NEW PASSWORD
+            ======================================== */}
 
             <div className="form-field">
 
@@ -188,16 +273,23 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
                 type="password"
                 placeholder="Enter new password"
                 value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
+                onChange={(event) => {
+                  setPassword(
+                    event.target.value
+                  );
+                  setError("");
+                }}
+                autoComplete="new-password"
+                disabled={loading}
                 required
               />
 
             </div>
 
 
-            {/* CONFIRM PASSWORD */}
+            {/* ========================================
+                CONFIRM PASSWORD
+            ======================================== */}
 
             <div className="form-field">
 
@@ -210,18 +302,23 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
                 type="password"
                 placeholder="Confirm new password"
                 value={confirmPassword}
-                onChange={(event) =>
+                onChange={(event) => {
                   setConfirmPassword(
                     event.target.value
-                  )
-                }
+                  );
+                  setError("");
+                }}
+                autoComplete="new-password"
+                disabled={loading}
                 required
               />
 
             </div>
 
 
-            {/* RESET BUTTON */}
+            {/* ========================================
+                RESET BUTTON
+            ======================================== */}
 
             <button
               type="submit"
@@ -236,7 +333,9 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
           </form>
 
 
-          {/* BACK TO LOGIN */}
+          {/* ========================================
+              BACK TO LOGIN
+          ======================================== */}
 
           <div className="signup-prompt">
 
@@ -248,6 +347,7 @@ function ResetPassword({ token, onResetSuccess, onBackToLogin }) {
               type="button"
               onClick={onBackToLogin}
               className="signup-link"
+              disabled={loading}
             >
               Back to login
             </button>

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import "./Auth.css";
 
-const API_URL = "https://finova-expense-tracker.onrender.com";
+const API_URL =
+  "https://finova-expense-tracker.onrender.com";
 
 function ForgotPassword({
   onBackToLogin,
@@ -20,11 +21,27 @@ function ForgotPassword({
     event.preventDefault();
 
     setError("");
+
+    // ========================================
+    // EMAIL VALIDATION
+    // ========================================
+
+    const trimmedEmail = email.trim();
+
+    if (!trimmedEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // ========================================
+      // API REQUEST
+      // ========================================
+
       const response = await fetch(
-        `${API_URL}/forgot-password`,
+        `${API_URL}/api/auth/forgot-password`,
         {
           method: "POST",
 
@@ -33,28 +50,60 @@ function ForgotPassword({
           },
 
           body: JSON.stringify({
-            email,
+            email: trimmedEmail,
           }),
         }
       );
 
-      const data = await response.json();
+      // ========================================
+      // READ RESPONSE SAFELY
+      // ========================================
+
+      const contentType =
+        response.headers.get("content-type") || "";
+
+      let data;
+
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+
+        console.error(
+          "Server returned non-JSON response:",
+          text
+        );
+
+        throw new Error(
+          "Server returned an invalid response. Please try again."
+        );
+      }
+
+      // ========================================
+      // HANDLE API ERROR
+      // ========================================
 
       if (!response.ok) {
         throw new Error(
           data.message ||
-          "Failed to process password reset"
+            "Failed to process password reset."
         );
       }
 
-      // Check whether backend returned a token
+      // ========================================
+      // CHECK RESET TOKEN
+      // ========================================
+
       if (!data.resetToken) {
         throw new Error(
           "Password reset token was not generated."
         );
       }
 
-      // Send token to App.jsx
+      // ========================================
+      // SEND TOKEN TO APP.JSX
+      // ========================================
+
       onResetToken(data.resetToken);
 
     } catch (error) {
@@ -65,7 +114,7 @@ function ForgotPassword({
 
       setError(
         error.message ||
-        "Something went wrong. Please try again."
+          "Something went wrong. Please try again."
       );
 
     } finally {
@@ -80,7 +129,9 @@ function ForgotPassword({
   return (
     <div className="auth-page">
 
-      {/* ================= LEFT SIDE ================= */}
+      {/* ========================================
+          LEFT SIDE
+      ======================================== */}
 
       <div className="auth-brand-section">
 
@@ -101,21 +152,29 @@ function ForgotPassword({
         </p>
 
         <div className="auth-decoration">
+
           <div className="circle circle-one"></div>
+
           <div className="circle circle-two"></div>
+
           <div className="circle circle-three"></div>
+
         </div>
 
       </div>
 
 
-      {/* ================= RIGHT SIDE ================= */}
+      {/* ========================================
+          RIGHT SIDE
+      ======================================== */}
 
       <div className="auth-form-section">
 
         <div className="auth-card">
 
-          {/* HEADER */}
+          {/* ========================================
+              HEADER
+          ======================================== */}
 
           <div className="auth-header">
 
@@ -135,7 +194,9 @@ function ForgotPassword({
           </div>
 
 
-          {/* ERROR */}
+          {/* ========================================
+              ERROR
+          ======================================== */}
 
           {error && (
             <div className="auth-error">
@@ -144,7 +205,9 @@ function ForgotPassword({
           )}
 
 
-          {/* FORM */}
+          {/* ========================================
+              FORM
+          ======================================== */}
 
           <form
             className="auth-form"
@@ -166,28 +229,36 @@ function ForgotPassword({
                   setEmail(event.target.value);
                   setError("");
                 }}
+                autoComplete="email"
+                disabled={loading}
                 required
               />
 
             </div>
 
 
-            {/* RESET BUTTON */}
+            {/* ========================================
+                RESET BUTTON
+            ======================================== */}
 
             <button
               type="submit"
               className="login-btn"
               disabled={loading}
             >
+
               {loading
                 ? "Processing..."
                 : "Reset Password"}
+
             </button>
 
           </form>
 
 
-          {/* BACK TO LOGIN */}
+          {/* ========================================
+              BACK TO LOGIN
+          ======================================== */}
 
           <div className="signup-prompt">
 
@@ -199,6 +270,7 @@ function ForgotPassword({
               type="button"
               onClick={onBackToLogin}
               className="signup-link"
+              disabled={loading}
             >
               Back to login
             </button>

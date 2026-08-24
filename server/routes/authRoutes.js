@@ -6,7 +6,6 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-
 // ========================================
 // SIGN UP
 // ========================================
@@ -15,45 +14,55 @@ router.post("/signup", async (req, res) => {
     try {
         const { name, email, password } = req.body;
 
-        // Check required fields
+        // Required fields
         if (!name || !email || !password) {
             return res.status(400).json({
-                message: "Name, email and password are required"
+                message:
+                    "Name, email and password are required"
             });
         }
 
-        // Check password length
+        const cleanName = name.trim();
+        const cleanEmail = email.toLowerCase().trim();
+
+        // Password length
         if (password.length < 6) {
             return res.status(400).json({
-                message: "Password must be at least 6 characters"
+                message:
+                    "Password must be at least 6 characters"
             });
         }
 
-        // Check if email already exists
-        const existingUser = await User.findOne({ email });
+        // Check existing user
+        const existingUser = await User.findOne({
+            email: cleanEmail
+        });
 
         if (existingUser) {
             return res.status(409).json({
-                message: "An account with this email already exists"
+                message:
+                    "An account with this email already exists"
             });
         }
 
         // Hash password
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword =
+            await bcrypt.hash(password, 10);
 
         // Create user
         const user = new User({
-            name,
-            email,
+            name: cleanName,
+            email: cleanEmail,
             password: hashedPassword
         });
 
-        // Save user
         const savedUser = await user.save();
 
-        // Don't send password back
-        res.status(201).json({
-            message: "Account created successfully",
+        // Response
+        return res.status(201).json({
+            message:
+                "Account created successfully",
+
             user: {
                 id: savedUser._id,
                 name: savedUser.name,
@@ -62,12 +71,14 @@ router.post("/signup", async (req, res) => {
         });
 
     } catch (error) {
+        console.error(
+            "Signup error:",
+            error
+        );
 
-        console.error("Signup error:", error);
-
-        res.status(500).json({
-            message: "Failed to create account",
-            error: error.message
+        return res.status(500).json({
+            message:
+                "Failed to create account"
         });
     }
 });
@@ -81,42 +92,56 @@ router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check required fields
+        // Required fields
         if (!email || !password) {
             return res.status(400).json({
-                message: "Email and password are required"
+                message:
+                    "Email and password are required"
             });
         }
 
-        // Find user by email
-        const user = await User.findOne({ email });
+        const cleanEmail =
+            email.toLowerCase().trim();
+
+        // Find user
+        const user = await User.findOne({
+            email: cleanEmail
+        });
 
         if (!user) {
             return res.status(401).json({
-                message: "Invalid email or password"
+                message:
+                    "Invalid email or password"
             });
         }
 
-        // Compare entered password with hashed password
-        const isPasswordCorrect = await bcrypt.compare(
-            password,
-            user.password
-        );
+        // Check password
+        const isPasswordCorrect =
+            await bcrypt.compare(
+                password,
+                user.password
+            );
 
         if (!isPasswordCorrect) {
             return res.status(401).json({
-                message: "Invalid email or password"
+                message:
+                    "Invalid email or password"
             });
         }
 
-        // Check JWT secret
+        // JWT secret check
         if (!process.env.JWT_SECRET) {
+            console.error(
+                "JWT_SECRET is missing"
+            );
+
             return res.status(500).json({
-                message: "JWT secret is not configured"
+                message:
+                    "JWT secret is not configured"
             });
         }
 
-        // Create JWT token
+        // Create JWT
         const token = jwt.sign(
             {
                 userId: user._id
@@ -127,9 +152,10 @@ router.post("/login", async (req, res) => {
             }
         );
 
-        // Send successful login response
-        res.status(200).json({
-            message: "Login successful",
+        // Successful login
+        return res.status(200).json({
+            message:
+                "Login successful",
 
             token,
 
@@ -141,135 +167,191 @@ router.post("/login", async (req, res) => {
         });
 
     } catch (error) {
+        console.error(
+            "Login error:",
+            error
+        );
 
-        console.error("Login error:", error);
-
-        res.status(500).json({
-            message: "Failed to login",
-            error: error.message
+        return res.status(500).json({
+            message:
+                "Failed to login"
         });
     }
 });
+
+
+// ========================================
+// FORGOT PASSWORD
+// ========================================
+
+router.post(
+    "/forgot-password",
+    async (req, res) => {
+        try {
+            const { email } = req.body;
+
+            // Check email
+            if (!email) {
+                return res.status(400).json({
+                    message:
+                        "Email is required"
+                });
+            }
+
+            const cleanEmail =
+                email.toLowerCase().trim();
+
+            // Find user
+            const user =
+                await User.findOne({
+                    email: cleanEmail
+                });
+
+            if (!user) {
+                return res.status(404).json({
+                    message:
+                        "No account found with this email."
+                });
+            }
+
+            // Generate secure token
+            const resetToken =
+                crypto
+                    .randomBytes(32)
+                    .toString("hex");
+
+            // Token expires after 15 minutes
+            const resetTokenExpires =
+                new Date(
+                    Date.now() +
+                    15 * 60 * 1000
+                );
+
+            // Save reset information
+            user.resetPasswordToken =
+                resetToken;
+
+            user.resetPasswordExpires =
+                resetTokenExpires;
+
+            await user.save();
+
+            // Development/testing only
+            console.log(
+                "Password reset token:",
+                resetToken
+            );
+
+            return res.status(200).json({
+                message:
+                    "Password reset token generated successfully.",
+
+                resetToken
+            });
+
+        } catch (error) {
+            console.error(
+                "Forgot password error:",
+                error
+            );
+
+            return res.status(500).json({
+                message:
+                    "Failed to process password reset request"
+            });
+        }
+    }
+);
+
+
+// ========================================
+// RESET PASSWORD
+// ========================================
+
+router.post(
+    "/reset-password",
+    async (req, res) => {
+        try {
+            const {
+                token,
+                password
+            } = req.body;
+
+            // Required fields
+            if (!token || !password) {
+                return res.status(400).json({
+                    message:
+                        "Reset token and new password are required"
+                });
+            }
+
+            // Password length
+            if (password.length < 6) {
+                return res.status(400).json({
+                    message:
+                        "Password must be at least 6 characters"
+                });
+            }
+
+            // Find user with valid token
+            const user =
+                await User.findOne({
+                    resetPasswordToken:
+                        token,
+
+                    resetPasswordExpires: {
+                        $gt: new Date()
+                    }
+                });
+
+            // Invalid / expired token
+            if (!user) {
+                return res.status(400).json({
+                    message:
+                        "Invalid or expired password reset token"
+                });
+            }
+
+            // Hash new password
+            const hashedPassword =
+                await bcrypt.hash(
+                    password,
+                    10
+                );
+
+            // Update password
+            user.password =
+                hashedPassword;
+
+            // Remove reset token
+            user.resetPasswordToken = null;
+
+            user.resetPasswordExpires = null;
+
+            await user.save();
+
+            return res.status(200).json({
+                message:
+                    "Password reset successfully"
+            });
+
+        } catch (error) {
+            console.error(
+                "Reset password error:",
+                error
+            );
+
+            return res.status(500).json({
+                message:
+                    "Failed to reset password"
+            });
+        }
+    }
+);
 
 
 // ========================================
 // EXPORT ROUTER
 // ========================================
-// ========================================
-// FORGOT PASSWORD
-// ========================================
 
-router.post("/forgot-password", async (req, res) => {
-    try {
-        const { email } = req.body;
-
-        // Check email
-        if (!email) {
-            return res.status(400).json({
-                message: "Email is required"
-            });
-        }
-
-       // Find user
-const user = await User.findOne({
-    email: email.toLowerCase().trim()
-});
-
-// Check if user exists
-if (!user) {
-    return res.status(404).json({
-        message: "No account found with this email."
-    });
-}
-
-// Generate secure random token
-const resetToken = crypto.randomBytes(32).toString("hex");
-
-// Token expires in 15 minutes
-const resetTokenExpires = new Date(
-    Date.now() + 15 * 60 * 1000
-);
-
-// Save token
-user.resetPasswordToken = resetToken;
-user.resetPasswordExpires = resetTokenExpires;
-
-await user.save();
-
-console.log("Password reset token:", resetToken);
-
-res.status(200).json({
-    message: "Password reset token generated successfully.",
-    resetToken
-});
-    } catch (error) {
-
-        console.error("Forgot password error:", error);
-
-        res.status(500).json({
-            message: "Failed to process password reset request"
-        });
-    }
-});
-// ========================================
-// RESET PASSWORD
-// ========================================
-
-router.post("/reset-password", async (req, res) => {
-    try {
-        const { token, password } = req.body;
-
-        // Check required fields
-        if (!token || !password) {
-            return res.status(400).json({
-                message: "Reset token and new password are required"
-            });
-        }
-
-        // Check password length
-        if (password.length < 6) {
-            return res.status(400).json({
-                message: "Password must be at least 6 characters"
-            });
-        }
-
-        // Find user with valid token
-        const user = await User.findOne({
-            resetPasswordToken: token,
-            resetPasswordExpires: {
-                $gt: new Date()
-            }
-        });
-
-        // Invalid or expired token
-        if (!user) {
-            return res.status(400).json({
-                message: "Invalid or expired password reset token"
-            });
-        }
-
-        // Hash new password
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Update password
-        user.password = hashedPassword;
-
-        // Remove reset token
-        user.resetPasswordToken = null;
-        user.resetPasswordExpires = null;
-
-        await user.save();
-
-        res.status(200).json({
-            message: "Password reset successfully"
-        });
-
-    } catch (error) {
-        console.error("Reset password error:", error);
-
-        res.status(500).json({
-            message: "Failed to reset password"
-        });
-    }
-});
 module.exports = router;
