@@ -10,25 +10,6 @@ function AddExpense({
   editingExpense,
 }) {
   // ========================================
-  // INITIAL FORM DATA
-  // ========================================
-
-  const [formData, setFormData] = useState({
-    title: editingExpense?.title || "",
-    amount:
-      editingExpense?.amount !== undefined
-        ? editingExpense.amount
-        : "",
-    category: editingExpense?.category || "Food",
-    date: editingExpense?.date
-      ? editingExpense.date.split("T")[0]
-      : "",
-  });
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // ========================================
   // CATEGORY LIST
   // ========================================
 
@@ -42,6 +23,32 @@ function AddExpense({
     "Education",
     "Other",
   ];
+
+  // ========================================
+  // INITIAL FORM DATA
+  // ========================================
+
+  const [formData, setFormData] = useState({
+    title: editingExpense?.title || "",
+
+    amount:
+      editingExpense?.amount !== undefined
+        ? editingExpense.amount
+        : "",
+
+    category:
+      editingExpense?.category &&
+      categories.includes(editingExpense.category)
+        ? editingExpense.category
+        : "Food",
+
+    date: editingExpense?.date
+      ? editingExpense.date.split("T")[0]
+      : "",
+  });
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // ========================================
   // HANDLE INPUT CHANGE
@@ -59,7 +66,7 @@ function AddExpense({
   };
 
   // ========================================
-  // SUBMIT
+  // SUBMIT FORM
   // ========================================
 
   const handleSubmit = async (event) => {
@@ -67,44 +74,53 @@ function AddExpense({
 
     setError("");
 
-    // ----------------------------------------
+    // ========================================
     // TITLE VALIDATION
-    // ----------------------------------------
+    // ========================================
 
-    if (!formData.title.trim()) {
+    const trimmedTitle = formData.title.trim();
+
+    if (!trimmedTitle) {
       setError("Expense title is required.");
       return;
     }
 
-    // ----------------------------------------
+    // ========================================
     // AMOUNT VALIDATION
-    // ----------------------------------------
+    // ========================================
+
+    const numericAmount = Number(formData.amount);
 
     if (
       formData.amount === "" ||
-      Number(formData.amount) <= 0
+      !Number.isFinite(numericAmount) ||
+      numericAmount <= 0
     ) {
       setError("Please enter a valid amount.");
       return;
     }
 
-    // ----------------------------------------
+    // ========================================
     // CATEGORY VALIDATION
-    // ----------------------------------------
+    // ========================================
 
     if (!categories.includes(formData.category)) {
       setError("Please select a valid category.");
       return;
     }
 
-    // ----------------------------------------
+    // ========================================
     // DATE VALIDATION
-    // ----------------------------------------
+    // ========================================
 
     if (!formData.date) {
       setError("Please select a date.");
       return;
     }
+
+    // ========================================
+    // START LOADING
+    // ========================================
 
     setLoading(true);
 
@@ -122,16 +138,47 @@ function AddExpense({
       }
 
       // ========================================
-      // URL + METHOD
+      // CHECK EDIT ID
       // ========================================
 
-      const url = editingExpense
+      const isEditing = Boolean(editingExpense);
+
+      if (isEditing && !editingExpense?._id) {
+        console.error(
+          "Editing expense is missing _id:",
+          editingExpense
+        );
+
+        throw new Error(
+          "Cannot update this expense because its ID is missing."
+        );
+      }
+
+      // ========================================
+      // URL
+      // ========================================
+
+      const url = isEditing
         ? `${API_URL}/${editingExpense._id}`
         : API_URL;
 
-      const method = editingExpense
+      // ========================================
+      // METHOD
+      // ========================================
+
+      const method = isEditing
         ? "PUT"
         : "POST";
+
+      // ========================================
+      // DEBUG
+      // ========================================
+
+      console.log("Expense Request");
+      console.log("Method:", method);
+      console.log("URL:", url);
+      console.log("Editing:", isEditing);
+      console.log("Expense ID:", editingExpense?._id);
 
       // ========================================
       // API REQUEST
@@ -146,34 +193,77 @@ function AddExpense({
         },
 
         body: JSON.stringify({
-          title: formData.title.trim(),
-          amount: Number(formData.amount),
+          title: trimmedTitle,
+          amount: numericAmount,
           category: formData.category,
           date: formData.date,
         }),
       });
 
       // ========================================
-      // RESPONSE
+      // READ RESPONSE
       // ========================================
 
-      const data = await response.json();
+      const responseText = await response.text();
 
-      if (!response.ok) {
+      console.log(
+        "Response Status:",
+        response.status
+      );
+
+      console.log(
+        "Response URL:",
+        response.url
+      );
+
+      console.log(
+        "Response:",
+        responseText
+      );
+
+      // ========================================
+      // CONVERT RESPONSE TO JSON
+      // ========================================
+
+      let data;
+
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error(
+          "Response is not JSON:",
+          responseText
+        );
+
         throw new Error(
-          data.message ||
-            "Failed to save expense."
+          `Server returned an invalid response (${response.status}).`
         );
       }
 
       // ========================================
-      // SEND EXPENSE BACK TO DASHBOARD
+      // API ERROR
+      // ========================================
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+          "Failed to save expense."
+        );
+      }
+
+      // ========================================
+      // GET SAVED EXPENSE
+      // ========================================
+
+      const savedExpense =
+        data.expense || data;
+
+      // ========================================
+      // SEND DATA TO PARENT
       // ========================================
 
       if (onExpenseAdded) {
-        onExpenseAdded(
-          data.expense || data
-        );
+        onExpenseAdded(savedExpense);
       }
 
       // ========================================
@@ -190,7 +280,7 @@ function AddExpense({
 
       setError(
         error.message ||
-          "Something went wrong. Please try again."
+        "Something went wrong. Please try again."
       );
 
     } finally {
@@ -231,7 +321,7 @@ function AddExpense({
 
             <p>
               {editingExpense
-                ? "Update your transaction"
+                ? "Update your transaction details"
                 : "Record a new transaction"}
             </p>
 
@@ -242,6 +332,7 @@ function AddExpense({
             className="close-btn"
             onClick={onClose}
             disabled={loading}
+            aria-label="Close"
           >
             ×
           </button>
@@ -270,7 +361,7 @@ function AddExpense({
         >
 
           {/* ========================================
-              TITLE
+              EXPENSE TITLE
           ======================================== */}
 
           <div className="expense-form-group">
@@ -287,6 +378,7 @@ function AddExpense({
               value={formData.title}
               onChange={handleChange}
               autoComplete="off"
+              disabled={loading}
             />
 
           </div>
@@ -309,8 +401,9 @@ function AddExpense({
               placeholder="e.g. 500"
               value={formData.amount}
               onChange={handleChange}
-              min="0"
+              min="0.01"
               step="0.01"
+              disabled={loading}
             />
 
           </div>
@@ -333,14 +426,15 @@ function AddExpense({
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
+                disabled={loading}
               >
 
-                {categories.map((item) => (
+                {categories.map((category) => (
                   <option
-                    key={item}
-                    value={item}
+                    key={category}
+                    value={category}
                   >
-                    {item}
+                    {category}
                   </option>
                 ))}
 
@@ -367,13 +461,14 @@ function AddExpense({
               name="date"
               value={formData.date}
               onChange={handleChange}
+              disabled={loading}
             />
 
           </div>
 
 
           {/* ========================================
-              ACTIONS
+              ACTION BUTTONS
           ======================================== */}
 
           <div className="expense-actions">
@@ -392,13 +487,11 @@ function AddExpense({
               className="save-expense-btn"
               disabled={loading}
             >
-
               {loading
                 ? "Saving..."
                 : editingExpense
-                ? "Update Expense"
+                ? "Save Changes"
                 : "Save Expense"}
-
             </button>
 
           </div>
