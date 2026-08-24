@@ -5,13 +5,11 @@
 .expenses-page {
   min-height: 100vh;
   width: 100%;
-
   box-sizing: border-box;
 
   padding: 50px 60px;
 
   background: #f2faf7;
-
   color: #073b3a;
 }
 
@@ -80,7 +78,6 @@
   margin: 0 auto 25px;
 
   display: grid;
-
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
   gap: 18px;
@@ -96,7 +93,6 @@
   background: #ffffff;
 
   border: 1px solid #dcece6;
-
   border-radius: 16px;
 
   display: flex;
@@ -158,7 +154,6 @@
   position: relative;
 
   flex: 1;
-
   max-width: 500px;
 }
 
@@ -173,7 +168,6 @@
   background: #ffffff;
 
   border: 1px solid #dcece6;
-
   border-radius: 10px;
 
   color: #315e58;
@@ -216,7 +210,7 @@
 
 
 /* ========================================
-   CATEGORY FILTER DROPDOWN
+   CATEGORY FILTER
 ======================================== */
 
 .category-select-wrapper {
@@ -237,10 +231,10 @@
   padding: 0 42px 0 16px;
 
   border: 1px solid #dcece6;
-
   border-radius: 10px;
 
-  background: #ffffff;
+  background-color: #ffffff !important;
+  background-image: none !important;
 
   color: #315e58;
 
@@ -252,40 +246,47 @@
 
   cursor: pointer;
 
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  background-image: none;
+  /* Remove native browser arrow */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
 
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
+
+/* CUSTOM FILTER ARROW */
+
 .category-select-wrapper::after {
-  content: "⌄";
+  content: "";
 
   position: absolute;
 
-  right: 15px;
+  right: 16px;
   top: 50%;
 
-  transform: translateY(-55%);
+  width: 7px;
+  height: 7px;
 
-  color: #315e58;
+  border-right: 2px solid #315e58;
+  border-bottom: 2px solid #315e58;
 
-  font-size: 17px;
-  font-weight: 700;
-
-  line-height: 1;
+  transform: translateY(-65%) rotate(45deg);
 
   pointer-events: none;
 }
 
+
+/* FILTER HOVER */
+
 .category-select:hover {
   border-color: #b9dcd0;
 }
+
+
+/* FILTER FOCUS */
 
 .category-select:focus {
   border-color: #4dbb8d;
@@ -294,9 +295,11 @@
     0 0 0 3px rgba(77, 187, 141, 0.1);
 }
 
+
+/* FILTER OPTIONS */
+
 .category-select option {
   background: #ffffff;
-
   color: #315e58;
 
   font-family: inherit;
@@ -317,7 +320,6 @@
   background: #ffffff;
 
   border: 1px solid #dcece6;
-
   border-radius: 18px;
 
   overflow: hidden;
@@ -365,7 +367,6 @@
   font-weight: 700;
 
   text-transform: uppercase;
-
   letter-spacing: 0.4px;
 }
 
@@ -394,8 +395,7 @@
 
   border-bottom: 1px solid #edf4f1;
 
-  transition:
-    background-color 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .expense-row:last-child {
@@ -415,7 +415,6 @@
   min-width: 0;
 
   display: flex;
-
   align-items: center;
 
   gap: 12px;
@@ -432,7 +431,6 @@
   background: #eaf8f1;
 
   display: flex;
-
   align-items: center;
   justify-content: center;
 
@@ -443,9 +441,7 @@
   min-width: 0;
 
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   white-space: nowrap;
 
   color: #073b3a;
@@ -491,7 +487,7 @@
 
 
 /* ========================================
-   ACTIONS
+   TABLE ACTIONS
 ======================================== */
 
 .expense-actions {
@@ -505,7 +501,7 @@
 
 
 /* ========================================
-   EDIT BUTTON
+   EDIT / DELETE BUTTON
 ======================================== */
 
 .edit-btn,
@@ -877,25 +873,47 @@
    ADD / EDIT CATEGORY DROPDOWN
 ======================================== */
 
+/*
+   IMPORTANT:
+   This selector belongs to AddExpense.jsx
+   and EditExpense.jsx.
+*/
+
 .expense-select-wrapper {
   position: relative;
 
   width: 100%;
+  height: 56px;
 }
 
-.expense-select-wrapper select {
+
+/* SELECT ITSELF */
+
+.expense-select-wrapper select,
+.expense-select-wrapper select:focus,
+.expense-select-wrapper select:hover {
   width: 100%;
   height: 56px;
 
   box-sizing: border-box;
 
-  padding: 0 45px 0 16px;
+  padding: 0 48px 0 16px;
 
   border: 1px solid #cfe4dc;
 
   border-radius: 12px;
 
-  background: #ffffff;
+  background-color: #ffffff !important;
+
+  /*
+     VERY IMPORTANT:
+     Remove ALL native/browser arrows.
+  */
+  background-image: none !important;
+
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
 
   color: #073b3a;
 
@@ -906,40 +924,44 @@
 
   cursor: pointer;
 
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  background-image: none;
-
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
 
+
+/* CUSTOM SINGLE ARROW */
+
 .expense-select-wrapper::after {
-  content: "⌄";
+  content: "";
 
   position: absolute;
 
-  right: 17px;
+  right: 18px;
   top: 50%;
 
-  transform: translateY(-55%);
+  width: 8px;
+  height: 8px;
 
-  color: #073b3a;
+  border-right: 2px solid #073b3a;
+  border-bottom: 2px solid #073b3a;
 
-  font-size: 19px;
-  font-weight: 700;
-
-  line-height: 1;
+  transform: translateY(-65%) rotate(45deg);
 
   pointer-events: none;
+
+  z-index: 2;
 }
+
+
+/* SELECT HOVER */
 
 .expense-select-wrapper select:hover {
   border-color: #b9dcd0;
 }
+
+
+/* SELECT FOCUS */
 
 .expense-select-wrapper select:focus {
   border-color: #4dbb8d;
@@ -948,13 +970,19 @@
     0 0 0 4px rgba(77, 187, 141, 0.1);
 }
 
+
+/* SELECT DISABLED */
+
 .expense-select-wrapper select:disabled {
-  background: #f6faf8;
+  background-color: #f6faf8 !important;
 
   opacity: 0.7;
 
   cursor: not-allowed;
 }
+
+
+/* OPTIONS */
 
 .expense-select-wrapper select option {
   background: #ffffff;
@@ -962,6 +990,7 @@
   color: #073b3a;
 
   font-family: inherit;
+
   font-size: 14px;
 }
 
@@ -1009,6 +1038,7 @@
   color: #426e68;
 
   font-family: inherit;
+
   font-size: 14px;
   font-weight: 700;
 
@@ -1049,6 +1079,7 @@
   color: #ffffff;
 
   font-family: inherit;
+
   font-size: 14px;
   font-weight: 700;
 
@@ -1111,7 +1142,6 @@
   .expense-table-header {
     font-size: 11px;
   }
-
 }
 
 
@@ -1141,6 +1171,7 @@
 
   .search-box {
     max-width: none;
+
     width: 100%;
   }
 
@@ -1176,7 +1207,6 @@
     margin-left: 20px;
     margin-right: 20px;
   }
-
 }
 
 
@@ -1210,5 +1240,4 @@
   .save-expense-btn {
     height: 48px;
   }
-
 }
