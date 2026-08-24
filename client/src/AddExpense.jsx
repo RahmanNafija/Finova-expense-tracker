@@ -126,7 +126,7 @@ function AddExpense({
 
     try {
       // ========================================
-      // GET TOKEN
+      // GET LOGIN TOKEN
       // ========================================
 
       const token = localStorage.getItem("token");
@@ -138,50 +138,21 @@ function AddExpense({
       }
 
       // ========================================
-      // CHECK EDIT ID
+      // CREATE OR UPDATE
       // ========================================
 
       const isEditing = Boolean(editingExpense);
 
-      if (isEditing && !editingExpense?._id) {
-        console.error(
-          "Editing expense is missing _id:",
-          editingExpense
-        );
-
-        throw new Error(
-          "Cannot update this expense because its ID is missing."
-        );
-      }
-
-      // ========================================
-      // URL
-      // ========================================
-
       const url = isEditing
         ? `${API_URL}/${editingExpense._id}`
         : API_URL;
-
-      // ========================================
-      // METHOD
-      // ========================================
 
       const method = isEditing
         ? "PUT"
         : "POST";
 
       // ========================================
-      // DEBUG
-      // ========================================
-
-      console.log("Expense Request");
-      console.log("Method:", method);
-      console.log("URL:", url);
-      console.log("Editing:", isEditing);
-      console.log("Expense ID:", editingExpense?._id);
-
-      // ========================================
-      // API REQUEST
+      // SEND REQUEST
       // ========================================
 
       const response = await fetch(url, {
@@ -201,53 +172,41 @@ function AddExpense({
       });
 
       // ========================================
-      // READ RESPONSE
+      // READ RESPONSE SAFELY
       // ========================================
 
-      const responseText = await response.text();
-
-      console.log(
-        "Response Status:",
-        response.status
-      );
-
-      console.log(
-        "Response URL:",
-        response.url
-      );
-
-      console.log(
-        "Response:",
-        responseText
-      );
-
-      // ========================================
-      // CONVERT RESPONSE TO JSON
-      // ========================================
+      const contentType =
+        response.headers.get("content-type") || "";
 
       let data;
 
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
+      if (
+        contentType.includes(
+          "application/json"
+        )
+      ) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+
         console.error(
-          "Response is not JSON:",
-          responseText
+          "Server returned non-JSON response:",
+          text
         );
 
         throw new Error(
-          `Server returned an invalid response (${response.status}).`
+          "Server returned an invalid response. Please try again."
         );
       }
 
       // ========================================
-      // API ERROR
+      // HANDLE API ERROR
       // ========================================
 
       if (!response.ok) {
         throw new Error(
           data.message ||
-          "Failed to save expense."
+            "Failed to save expense."
         );
       }
 
@@ -259,7 +218,7 @@ function AddExpense({
         data.expense || data;
 
       // ========================================
-      // SEND DATA TO PARENT
+      // SEND EXPENSE TO PARENT
       // ========================================
 
       if (onExpenseAdded) {
@@ -280,7 +239,7 @@ function AddExpense({
 
       setError(
         error.message ||
-        "Something went wrong. Please try again."
+          "Something went wrong. Please try again."
       );
 
     } finally {
@@ -430,14 +389,16 @@ function AddExpense({
                 disabled={loading}
               >
 
-                {categories.map((category) => (
-                  <option
-                    key={category}
-                    value={category}
-                  >
-                    {category}
-                  </option>
-                ))}
+                {categories.map(
+                  (category) => (
+                    <option
+                      key={category}
+                      value={category}
+                    >
+                      {category}
+                    </option>
+                  )
+                )}
 
               </select>
 
