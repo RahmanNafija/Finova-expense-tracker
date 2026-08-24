@@ -246,7 +246,6 @@
 
   cursor: pointer;
 
-  /* Remove native browser arrow */
   appearance: none !important;
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
@@ -255,9 +254,6 @@
     border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
-
-
-/* CUSTOM FILTER ARROW */
 
 .category-select-wrapper::after {
   content: "";
@@ -278,15 +274,9 @@
   pointer-events: none;
 }
 
-
-/* FILTER HOVER */
-
 .category-select:hover {
   border-color: #b9dcd0;
 }
-
-
-/* FILTER FOCUS */
 
 .category-select:focus {
   border-color: #4dbb8d;
@@ -294,9 +284,6 @@
   box-shadow:
     0 0 0 3px rgba(77, 187, 141, 0.1);
 }
-
-
-/* FILTER OPTIONS */
 
 .category-select option {
   background: #ffffff;
@@ -873,11 +860,7 @@
    ADD / EDIT CATEGORY DROPDOWN
 ======================================== */
 
-/*
-   IMPORTANT:
-   This selector belongs to AddExpense.jsx
-   and EditExpense.jsx.
-*/
+/* Wrapper */
 
 .expense-select-wrapper {
   position: relative;
@@ -887,42 +870,41 @@
 }
 
 
-/* SELECT ITSELF */
+/* SELECT */
 
-.expense-select-wrapper select,
-.expense-select-wrapper select:focus,
-.expense-select-wrapper select:hover {
+.expense-category-select {
+  display: block;
+
   width: 100%;
   height: 56px;
 
   box-sizing: border-box;
 
-  padding: 0 48px 0 16px;
+  padding: 0 50px 0 16px;
 
   border: 1px solid #cfe4dc;
 
   border-radius: 12px;
 
-  background-color: #ffffff !important;
-
-  /*
-     VERY IMPORTANT:
-     Remove ALL native/browser arrows.
-  */
-  background-image: none !important;
-
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
+  background: #ffffff !important;
 
   color: #073b3a;
 
   font-family: inherit;
   font-size: 14px;
+  font-weight: 400;
 
   outline: none;
 
   cursor: pointer;
+
+  /* Remove native browser arrow */
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+
+  /* Remove background arrow */
+  background-image: none !important;
 
   transition:
     border-color 0.2s ease,
@@ -930,7 +912,35 @@
 }
 
 
-/* CUSTOM SINGLE ARROW */
+/* HOVER */
+
+.expense-category-select:hover {
+  border-color: #b9dcd0;
+}
+
+
+/* FOCUS */
+
+.expense-category-select:focus {
+  border-color: #4dbb8d;
+
+  box-shadow:
+    0 0 0 4px rgba(77, 187, 141, 0.1);
+}
+
+
+/* DISABLED */
+
+.expense-category-select:disabled {
+  background: #f6faf8 !important;
+
+  opacity: 0.7;
+
+  cursor: not-allowed;
+}
+
+
+/* CUSTOM ARROW */
 
 .expense-select-wrapper::after {
   content: "";
@@ -950,41 +960,13 @@
 
   pointer-events: none;
 
-  z-index: 2;
-}
-
-
-/* SELECT HOVER */
-
-.expense-select-wrapper select:hover {
-  border-color: #b9dcd0;
-}
-
-
-/* SELECT FOCUS */
-
-.expense-select-wrapper select:focus {
-  border-color: #4dbb8d;
-
-  box-shadow:
-    0 0 0 4px rgba(77, 187, 141, 0.1);
-}
-
-
-/* SELECT DISABLED */
-
-.expense-select-wrapper select:disabled {
-  background-color: #f6faf8 !important;
-
-  opacity: 0.7;
-
-  cursor: not-allowed;
+  z-index: 5;
 }
 
 
 /* OPTIONS */
 
-.expense-select-wrapper select option {
+.expense-category-select option {
   background: #ffffff;
 
   color: #073b3a;
@@ -1121,7 +1103,6 @@
 ======================================== */
 
 @media (max-width: 900px) {
-
   .expenses-page {
     padding: 40px 30px;
   }
@@ -1150,7 +1131,6 @@
 ======================================== */
 
 @media (max-width: 700px) {
-
   .expenses-page {
     padding: 30px 18px;
   }
@@ -1215,7 +1195,6 @@
 ======================================== */
 
 @media (max-width: 450px) {
-
   .expenses-page {
     padding: 25px 14px;
   }

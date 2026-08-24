@@ -424,6 +424,7 @@ function AddExpense({
               <select
                 id="expense-category"
                 name="category"
+                className="expense-category-select"
                 value={formData.category}
                 onChange={handleChange}
                 disabled={loading}
