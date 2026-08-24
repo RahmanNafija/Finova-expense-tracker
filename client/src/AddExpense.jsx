@@ -33,7 +33,7 @@ function AddExpense({
 
     amount:
       editingExpense?.amount !== undefined
-        ? editingExpense.amount
+        ? String(editingExpense.amount)
         : "",
 
     category:
@@ -43,7 +43,9 @@ function AddExpense({
         : "Food",
 
     date: editingExpense?.date
-      ? editingExpense.date.split("T")[0]
+      ? new Date(editingExpense.date)
+          .toISOString()
+          .split("T")[0]
       : "",
   });
 
@@ -66,7 +68,7 @@ function AddExpense({
   };
 
   // ========================================
-  // SUBMIT FORM
+  // SUBMIT
   // ========================================
 
   const handleSubmit = async (event) => {
@@ -78,10 +80,13 @@ function AddExpense({
     // TITLE VALIDATION
     // ========================================
 
-    const trimmedTitle = formData.title.trim();
+    const trimmedTitle =
+      formData.title.trim();
 
     if (!trimmedTitle) {
-      setError("Expense title is required.");
+      setError(
+        "Expense title is required."
+      );
       return;
     }
 
@@ -89,14 +94,17 @@ function AddExpense({
     // AMOUNT VALIDATION
     // ========================================
 
-    const numericAmount = Number(formData.amount);
+    const numericAmount =
+      Number(formData.amount);
 
     if (
       formData.amount === "" ||
       !Number.isFinite(numericAmount) ||
       numericAmount <= 0
     ) {
-      setError("Please enter a valid amount.");
+      setError(
+        "Please enter a valid amount."
+      );
       return;
     }
 
@@ -104,8 +112,14 @@ function AddExpense({
     // CATEGORY VALIDATION
     // ========================================
 
-    if (!categories.includes(formData.category)) {
-      setError("Please select a valid category.");
+    if (
+      !categories.includes(
+        formData.category
+      )
+    ) {
+      setError(
+        "Please select a valid category."
+      );
       return;
     }
 
@@ -114,34 +128,35 @@ function AddExpense({
     // ========================================
 
     if (!formData.date) {
-      setError("Please select a date.");
+      setError(
+        "Please select a date."
+      );
       return;
     }
 
     // ========================================
-    // START LOADING
+    // TOKEN
     // ========================================
+
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      setError(
+        "Your session has expired. Please login again."
+      );
+      return;
+    }
 
     setLoading(true);
 
     try {
       // ========================================
-      // GET LOGIN TOKEN
+      // DETERMINE ADD OR EDIT
       // ========================================
 
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        throw new Error(
-          "Your session has expired. Please login again."
-        );
-      }
-
-      // ========================================
-      // CREATE OR UPDATE
-      // ========================================
-
-      const isEditing = Boolean(editingExpense);
+      const isEditing =
+        Boolean(editingExpense?._id);
 
       const url = isEditing
         ? `${API_URL}/${editingExpense._id}`
@@ -152,15 +167,18 @@ function AddExpense({
         : "POST";
 
       // ========================================
-      // SEND REQUEST
+      // API REQUEST
       // ========================================
 
       const response = await fetch(url, {
         method,
 
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Content-Type":
+            "application/json",
+
+          Authorization:
+            `Bearer ${token}`,
         },
 
         body: JSON.stringify({
@@ -172,11 +190,13 @@ function AddExpense({
       });
 
       // ========================================
-      // READ RESPONSE SAFELY
+      // READ RESPONSE
       // ========================================
 
       const contentType =
-        response.headers.get("content-type") || "";
+        response.headers.get(
+          "content-type"
+        ) || "";
 
       let data;
 
@@ -187,15 +207,16 @@ function AddExpense({
       ) {
         data = await response.json();
       } else {
-        const text = await response.text();
+        const text =
+          await response.text();
 
         console.error(
-          "Server returned non-JSON response:",
+          "Non-JSON server response:",
           text
         );
 
         throw new Error(
-          "Server returned an invalid response. Please try again."
+          "Server returned an invalid response. Please check the API URL."
         );
       }
 
@@ -205,8 +226,12 @@ function AddExpense({
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            "Failed to save expense."
+          data?.message ||
+            `Failed to ${
+              isEditing
+                ? "update"
+                : "save"
+            } expense.`
         );
       }
 
@@ -215,14 +240,25 @@ function AddExpense({
       // ========================================
 
       const savedExpense =
-        data.expense || data;
+        data?.expense || data;
+
+      if (
+        !savedExpense ||
+        !savedExpense._id
+      ) {
+        throw new Error(
+          "Expense was saved, but the server returned an invalid expense."
+        );
+      }
 
       // ========================================
-      // SEND EXPENSE TO PARENT
+      // SEND TO DASHBOARD
       // ========================================
 
       if (onExpenseAdded) {
-        onExpenseAdded(savedExpense);
+        onExpenseAdded(
+          savedExpense
+        );
       }
 
       // ========================================
@@ -254,7 +290,11 @@ function AddExpense({
   return (
     <div
       className="expense-overlay"
-      onClick={onClose}
+      onClick={() => {
+        if (!loading) {
+          onClose();
+        }
+      }}
     >
 
       <div
@@ -271,7 +311,6 @@ function AddExpense({
         <div className="expense-modal-header">
 
           <div>
-
             <h2>
               {editingExpense
                 ? "Edit Expense"
@@ -283,7 +322,6 @@ function AddExpense({
                 ? "Update your transaction details"
                 : "Record a new transaction"}
             </p>
-
           </div>
 
           <button
@@ -319,9 +357,7 @@ function AddExpense({
           onSubmit={handleSubmit}
         >
 
-          {/* ========================================
-              EXPENSE TITLE
-          ======================================== */}
+          {/* TITLE */}
 
           <div className="expense-form-group">
 
@@ -343,9 +379,7 @@ function AddExpense({
           </div>
 
 
-          {/* ========================================
-              AMOUNT
-          ======================================== */}
+          {/* AMOUNT */}
 
           <div className="expense-form-group">
 
@@ -368,9 +402,7 @@ function AddExpense({
           </div>
 
 
-          {/* ========================================
-              CATEGORY
-          ======================================== */}
+          {/* CATEGORY */}
 
           <div className="expense-form-group">
 
@@ -407,9 +439,7 @@ function AddExpense({
           </div>
 
 
-          {/* ========================================
-              DATE
-          ======================================== */}
+          {/* DATE */}
 
           <div className="expense-form-group">
 
@@ -429,9 +459,7 @@ function AddExpense({
           </div>
 
 
-          {/* ========================================
-              ACTION BUTTONS
-          ======================================== */}
+          {/* ACTIONS */}
 
           <div className="expense-actions">
 

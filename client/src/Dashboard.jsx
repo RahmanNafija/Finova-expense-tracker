@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import "./App.css";
 
 import AddExpense from "./AddExpense";
-import EditExpense from "./EditExpense";
 import Expenses from "./Expenses";
 
 const API_URL =
@@ -14,7 +13,8 @@ function Dashboard({ user, onLogout }) {
 
   const [deletingId, setDeletingId] = useState(null);
 
-  const [showAddExpense, setShowAddExpense] =
+  // Add / Edit modal
+  const [showExpenseModal, setShowExpenseModal] =
     useState(false);
 
   const [editingExpense, setEditingExpense] =
@@ -47,23 +47,40 @@ function Dashboard({ user, onLogout }) {
         },
       });
 
-      const data = await response.json();
+      const contentType =
+        response.headers.get("content-type") || "";
 
-      if (!response.ok) {
+      let data;
+
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+
+        console.error(
+          "Server returned non-JSON response:",
+          text
+        );
+
         throw new Error(
-          data.message || "Failed to fetch expenses"
+          "Server returned an invalid response."
         );
       }
 
-      // Backend may return:
-      // 1. [expense, expense, ...]
-      // OR
-      // 2. { expenses: [...] }
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to fetch expenses"
+        );
+      }
 
-      if (Array.isArray(data)) {
-        setExpenses(data);
-      } else if (Array.isArray(data.expenses)) {
+      // Backend returns:
+      // { expenses: [...] }
+
+      if (Array.isArray(data.expenses)) {
         setExpenses(data.expenses);
+      } else if (Array.isArray(data)) {
+        setExpenses(data);
       } else {
         console.error(
           "Unexpected expenses response:",
@@ -93,41 +110,78 @@ function Dashboard({ user, onLogout }) {
   }, []);
 
   // ========================================
-  // ADD EXPENSE
+  // OPEN ADD EXPENSE
   // ========================================
 
-  const handleExpenseAdded = (newExpense) => {
-    if (!newExpense) {
-      return;
-    }
-
-    setExpenses((previousExpenses) => [
-      newExpense,
-      ...previousExpenses,
-    ]);
-
-    setShowAddExpense(false);
+  const handleOpenAddExpense = () => {
+    setEditingExpense(null);
+    setShowExpenseModal(true);
   };
 
   // ========================================
-  // EDIT EXPENSE
+  // OPEN EDIT EXPENSE
   // ========================================
 
-  const handleExpenseUpdated = (
-    updatedExpense
-  ) => {
-    if (!updatedExpense) {
+  const handleOpenEditExpense = (expense) => {
+    if (!expense) {
       return;
     }
 
-    setExpenses((previousExpenses) =>
-      previousExpenses.map((expense) =>
-        expense._id === updatedExpense._id
-          ? updatedExpense
-          : expense
-      )
-    );
+    setEditingExpense(expense);
+    setShowExpenseModal(true);
 
+    // If currently on All Expenses page,
+    // go back to dashboard before opening modal.
+    setShowAllExpenses(false);
+  };
+
+  // ========================================
+  // EXPENSE ADDED / UPDATED
+  // ========================================
+
+  const handleExpenseSaved = (savedExpense) => {
+    if (!savedExpense) {
+      return;
+    }
+
+    // ----------------------------------------
+    // EDIT
+    // ----------------------------------------
+
+    if (editingExpense) {
+      setExpenses((previousExpenses) =>
+        previousExpenses.map((expense) =>
+          expense._id === savedExpense._id
+            ? savedExpense
+            : expense
+        )
+      );
+    }
+
+    // ----------------------------------------
+    // ADD
+    // ----------------------------------------
+
+    else {
+      setExpenses((previousExpenses) => [
+        savedExpense,
+        ...previousExpenses,
+      ]);
+    }
+
+    // Close modal
+    setShowExpenseModal(false);
+
+    // Clear editing state
+    setEditingExpense(null);
+  };
+
+  // ========================================
+  // CLOSE EXPENSE MODAL
+  // ========================================
+
+  const handleCloseExpenseModal = () => {
+    setShowExpenseModal(false);
     setEditingExpense(null);
   };
 
@@ -169,7 +223,25 @@ function Dashboard({ user, onLogout }) {
         }
       );
 
-      const data = await response.json();
+      const contentType =
+        response.headers.get("content-type") || "";
+
+      let data;
+
+      if (contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+
+        console.error(
+          "Delete returned non-JSON response:",
+          text
+        );
+
+        throw new Error(
+          "Server returned an invalid response."
+        );
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -207,18 +279,19 @@ function Dashboard({ user, onLogout }) {
     return (
       <Expenses
         expenses={expenses}
+
         onBack={() =>
           setShowAllExpenses(false)
         }
-        onEdit={(expense) => {
-          setEditingExpense(expense);
-          setShowAllExpenses(false);
-        }}
+
+        onEdit={handleOpenEditExpense}
+
         onDelete={handleDeleteExpense}
-        onAddExpense={() =>
-          setShowAddExpense(true)
-        }
+
+        onAddExpense={handleOpenAddExpense}
+
         user={user}
+
         onLogout={onLogout}
       />
     );
@@ -230,7 +303,8 @@ function Dashboard({ user, onLogout }) {
 
   const totalSpent = expenses.reduce(
     (total, expense) =>
-      total + Number(expense.amount || 0),
+      total +
+      Number(expense.amount || 0),
     0
   );
 
@@ -280,6 +354,8 @@ function Dashboard({ user, onLogout }) {
     "Shopping",
     "Bills",
     "Entertainment",
+    "Health",
+    "Education",
     "Other",
   ];
 
@@ -321,7 +397,18 @@ function Dashboard({ user, onLogout }) {
       return "—";
     }
 
-    return new Date(date).toLocaleDateString(
+    const formattedDate =
+      new Date(date);
+
+    if (
+      Number.isNaN(
+        formattedDate.getTime()
+      )
+    ) {
+      return "—";
+    }
+
+    return formattedDate.toLocaleDateString(
       "en-US",
       {
         day: "numeric",
@@ -370,7 +457,9 @@ function Dashboard({ user, onLogout }) {
   return (
     <div className="app">
 
-      {/* HEADER */}
+      {/* ========================================
+          HEADER
+      ======================================== */}
 
       <header className="header">
 
@@ -381,7 +470,9 @@ function Dashboard({ user, onLogout }) {
           </div>
 
           <div>
-            <h2>Finova</h2>
+            <h2>
+              Finova
+            </h2>
 
             <span>
               Smart Finance,
@@ -390,6 +481,7 @@ function Dashboard({ user, onLogout }) {
           </div>
 
         </div>
+
 
         <div className="header-right">
 
@@ -408,9 +500,7 @@ function Dashboard({ user, onLogout }) {
           <button
             type="button"
             className="add-expense-btn"
-            onClick={() =>
-              setShowAddExpense(true)
-            }
+            onClick={handleOpenAddExpense}
           >
             + Add Expense
           </button>
@@ -420,11 +510,15 @@ function Dashboard({ user, onLogout }) {
       </header>
 
 
-      {/* MAIN */}
+      {/* ========================================
+          MAIN
+      ======================================== */}
 
       <main className="dashboard">
 
-        {/* WELCOME */}
+        {/* ========================================
+            WELCOME
+        ======================================== */}
 
         <section className="welcome-section">
 
@@ -441,11 +535,10 @@ function Dashboard({ user, onLogout }) {
             </h1>
 
             <p className="subtitle">
-              Track your
-              spending, save
-              smarter, and
-              achieve your
-              financial goals.
+              Track your spending,
+              save smarter, and
+              achieve your financial
+              goals.
             </p>
 
           </div>
@@ -464,7 +557,9 @@ function Dashboard({ user, onLogout }) {
         </section>
 
 
-        {/* STATS */}
+        {/* ========================================
+            STATS
+        ======================================== */}
 
         <section className="stats-grid">
 
@@ -476,15 +571,21 @@ function Dashboard({ user, onLogout }) {
 
             <div className="stat-content">
 
-              <span>Total Spent</span>
+              <span>
+                Total Spent
+              </span>
 
               <h2>
                 {loading
                   ? "Loading..."
-                  : formatMoney(totalSpent)}
+                  : formatMoney(
+                      totalSpent
+                    )}
               </h2>
 
-              <small>All time</small>
+              <small>
+                All time
+              </small>
 
             </div>
 
@@ -549,11 +650,15 @@ function Dashboard({ user, onLogout }) {
         </section>
 
 
-        {/* CONTENT */}
+        {/* ========================================
+            CONTENT
+        ======================================== */}
 
         <section className="content-grid">
 
-          {/* RECENT EXPENSES */}
+          {/* ========================================
+              RECENT EXPENSES
+          ======================================== */}
 
           <div className="panel recent-panel">
 
@@ -590,8 +695,7 @@ function Dashboard({ user, onLogout }) {
                 Loading expenses...
               </div>
 
-            ) : recentExpenses.length ===
-              0 ? (
+            ) : recentExpenses.length === 0 ? (
 
               <div className="empty-state">
 
@@ -661,11 +765,13 @@ function Dashboard({ user, onLogout }) {
                           )}
                         </strong>
 
+                        {/* EDIT */}
+
                         <button
                           type="button"
                           className="edit-expense-btn"
                           onClick={() =>
-                            setEditingExpense(
+                            handleOpenEditExpense(
                               expense
                             )
                           }
@@ -673,6 +779,9 @@ function Dashboard({ user, onLogout }) {
                         >
                           ✏️
                         </button>
+
+
+                        {/* DELETE */}
 
                         <button
                           type="button"
@@ -708,7 +817,9 @@ function Dashboard({ user, onLogout }) {
           </div>
 
 
-          {/* CATEGORIES */}
+          {/* ========================================
+              CATEGORIES
+          ======================================== */}
 
           <div className="panel categories-panel">
 
@@ -727,6 +838,7 @@ function Dashboard({ user, onLogout }) {
               </div>
 
             </div>
+
 
             <div className="category-list">
 
@@ -772,31 +884,15 @@ function Dashboard({ user, onLogout }) {
       </main>
 
 
-      {/* ADD EXPENSE */}
+      {/* ========================================
+          ADD / EDIT EXPENSE MODAL
+      ======================================== */}
 
-      {showAddExpense && (
+      {showExpenseModal && (
         <AddExpense
-          onExpenseAdded={
-            handleExpenseAdded
-          }
-          onClose={() =>
-            setShowAddExpense(false)
-          }
-        />
-      )}
-
-
-      {/* EDIT EXPENSE */}
-
-      {editingExpense && (
-        <EditExpense
-          expense={editingExpense}
-          onExpenseUpdated={
-            handleExpenseUpdated
-          }
-          onClose={() =>
-            setEditingExpense(null)
-          }
+          editingExpense={editingExpense}
+          onExpenseAdded={handleExpenseSaved}
+          onClose={handleCloseExpenseModal}
         />
       )}
 
